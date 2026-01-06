@@ -1,3 +1,4 @@
+from django.conf import settings
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext
 
@@ -32,7 +33,7 @@ def llm_response(update: Update, context: CallbackContext) -> None:
     user = get_club_user(update)
     if not user or not user.is_active_member:
         update.message.reply_text(
-            "🙈 Я отвечаю только чувакам с активной подпиской в Клубе. Иди продлевай! https://vas3k.club/user/me/",
+            f"🙈 Я отвечаю только чувакам с активной подпиской в сообществе. Иди продлевай! {settings.APP_HOST}/user/me/",
             disable_web_page_preview=True
         )
         return None

@@ -4,7 +4,7 @@
 {% load render_bundle from webpack_loader %}
 <html lang="ru" theme="dark">
 <head>
-    <title>{% block title %}Вастрик.Клуб ✖️‍{% endblock %}</title>
+    <title>{% block title %}Сообщество выпускников РЭШ{% endblock %}</title>
     {% block fonts %}
         {% include "common/fonts.html" %}
     {% endblock %}
@@ -24,8 +24,8 @@
         <div class="landing-block landing-block-limited">
             <img src="{% static "images/logo/logo-1024.png" %}" alt="">
             <div class="landing-title">
-                <h1>Вастрик.Клуб</h1>
-                <p>Всё самое интересное происходит за закрытыми дверями</p>
+                <h1>Сообщество выпускников РЭШ</h1>
+                <p>Неформальное пространство для выпускников, сотрудников и друзей РЭШ</p>
                 <a href="{% url "login" %}" class="button button-black">Войти</a>
             </div>
         </div>
@@ -35,7 +35,7 @@
                 <h2>ЗАЧЕМ</h2>
 
                 <p>
-                    Клуб — это наше закрытое и в меру айтишное сообщество, в котором мы делимся опытом вдали от большого интернета.
+                    Это закрытое сообщество выпускников, сотрудников и друзей РЭШ, где мы делимся опытом вдали от большого интернета.
                 </p>
 
                 <p>
@@ -44,7 +44,7 @@
                 </p>
 
                 <p>
-                    Подробнее <a href="{% url "show_post" "docs" "about" %}">о Клубе</a> и <a href="{{ settings.VALUES_GUIDE_URL }}">наших ценностях</a>.
+                    Подробнее <a href="{% url "show_post" "docs" "about" %}">о сообществе</a> и <a href="{{ settings.VALUES_GUIDE_URL }}">наших ценностях</a>.
                 </p>
             </div>
         </div>
@@ -58,10 +58,10 @@
                 <h3 class="feature-title">Живой человеческий опыт и инсайды</h3>
 
                 <ul class="feature-list">
-                    <li>В Клубе пишут статьи, просят советов, делятся идеями и показывают пет-проджекты</li>
-                    <li>Мы проводим АМА и интервью с классными ребятами, где они делятся своим опытом</li>
+                    <li>Участники пишут статьи, просят советов, делятся идеями и показывают проекты</li>
+                    <li>Мы проводим АМА и интервью с выпускниками и сотрудниками, где они делятся опытом</li>
                     <li>Формат «только для своих» позволяет обсуждать темы без посторонних</li>
-                    <li>Комментарии больше не зашквар!</li>
+                    <li>Обсуждаем спокойно, уважительно и по делу</li>
                     <li>Никаких алгоритмических лент, охоты за вниманием и FOMO</li>
                 </ul>
             </div>
@@ -105,7 +105,7 @@
                                 <span class="topic-icon"><img src="https://i.vas3k.ru/lra.jpg" alt="Иконка комнаты" /></span>
                             </span>
                             <span class="topic-name-wrapper">
-                                <span class="topic-name">Книжный Клуб</span>
+                                <span class="topic-name">Книжный клуб</span>
                             </span>
                         </span>&nbsp;&nbsp;
 
@@ -161,10 +161,10 @@
             </div>
 
             <div>
-                <h3 class="feature-title">Тусовки по интересам</h3>
+                <h3 class="feature-title">Чаты и группы по интересам</h3>
 
                 <ul class="feature-list">
-                    <li>Сеть клубных чатиков в телеграме</li>
+                    <li>Сеть чатов сообщества в телеграме</li>
                     <li>Локальные сообщества по городам и странам</li>
                     <li>Оффлайн ивенты для тусовок и нетворкинга</li>
                     <li>АМА с экспертами и отзывчивые участники</li>
@@ -182,14 +182,14 @@
 
         <div class="landing-block landing-block-limited">
             <div style="flex: 0.7;">
-                <h3 class="feature-title">Движухи, фан и взаимопомощь</h3>
+                <h3 class="feature-title">Встречи, взаимопомощь и нетворкинг</h3>
 
                 <ul class="feature-list">
-                    <li>Митапы, сходки и <a href="https://www.youtube.com/watch?v=DYuxNbfyo_U" target="_blank">ивенты</a> в оффлайне</li>
+                    <li>Митапы, сходки и ивенты в оффлайне</li>
                     <li>Бартер, Справочная, VPN и другие коммьюнити-сервисы</li>
-                    <li>Коучинг и менторство между участниками Клуба</li>
-                    <li>У нас запрещена анонимность и действует жесткая модерация. Так мы сохраняем здоровое коммьюнити без говна</li>
-                    <li>Подробнее о правилах можно почитать в разделе <a href="{% url "show_post" "docs" "about" %}">О&nbsp;Клубе</a></li>
+                    <li>Менторство и карьерная поддержка между участниками</li>
+                    <li>У нас запрещена анонимность и действует модерация. Так мы сохраняем здоровое коммьюнити</li>
+                    <li>Подробнее о правилах можно почитать в разделе <a href="{% url "show_post" "docs" "about" %}">О&nbsp;сообществе</a></li>
                 </ul>
             </div>
 
@@ -236,13 +236,13 @@
 
         <div class="landing-block landing-block-narrow" id="join">
             <div>
-                <h2 class="landing-block-title">Как вступить?</h2>
+                <h2 class="landing-block-title">Как присоединиться?</h2>
 
                 <img src="{% static "images/landing/dolor2.png" %}" alt="$1" class="landing-dolor">
 
                 <p>
-                    Членство в Клубе платное — это позволяет нам самоокупаться, спонсировать движухи
-                    и оставаться независимыми от инвесторов и рекламодателей.
+                    Участие доступно выпускникам, сотрудникам и друзьям РЭШ.
+                    Базовый доступ подтверждаем по почте <strong>@nes.ru</strong>.
                 </p>
 
                 <p>
@@ -252,7 +252,7 @@
                 <br>
 
                 <p>
-                    <a href="{% url "join" %}" class="button button-black button-big">Вступить в Клуб</a>
+                    <a href="{% url "join" %}" class="button button-black button-big">Присоединиться</a>
                 </p>
             </div>
         </div>
@@ -262,11 +262,12 @@
 {% block footer %}
     <footer class="footer">
         <div class="footer-left" style="text-align: center; font-size: 130%;">
-            &copy; <a href="https://vas3k.blog" target="_blank">Вастрик</a> {% now "Y" %}
+            Сообщество выпускников РЭШ {% now "Y" %}
             &nbsp;&nbsp;&nbsp;&infin;&nbsp;&nbsp;&nbsp;
-            <a href="{% url "show_post" "docs" "about" %}">О Клубе</a>
+            <a href="{% url "show_post" "docs" "about" %}">О сообществе</a>
             &nbsp;&nbsp;&nbsp;&infin;&nbsp;&nbsp;&nbsp;
-            <a href="{% url "show_post" "docs" "contact" %}">Связаться с нами</a><br><br>
+            <a href="{% url "show_post" "docs" "contact" %}">Связаться с нами</a><br>
+            <span class="text-small">Неофициальный проект выпускников РЭШ</span><br><br>
         </div>
     </footer>
 {% endblock %}

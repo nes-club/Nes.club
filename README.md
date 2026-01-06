@@ -1,12 +1,12 @@
 <div align="center">
   <br>
   <img src="frontend/static/images/logo/logo-256.png" alt="">
-  <h1>vas3k.club</h1>
+  <h1>Сообщество выпускников РЭШ</h1>
 </div>
 
-Welcome to the [vas3k.club](https://vas3k.club) codebase. We're building our own little IT-lifestyle community. We've opensourced the code so that every member could contribute or implement a feature that they want.
+Welcome to the NES alumni community (non-official) codebase. We're building a private alumni community. We've opensourced the code so that every member could contribute or implement a feature that they want.
 
-[vas3k.club](https://vas3k.club) is a platform with private and paid memberships that has emerged around the [vas3k.blog](https://vas3k.blog) blog and satellite chat rooms. It's not a typical IT community with tutorials and framework reviews, but rather more of a lifestyle one. We are trying to build a peaceful and useful ecosystem, which the Internet has lost a long ago. Therefore, we carefully select and filter new members and do not seek wild growth.
+This project is based on the vas3k.club engine and adapted for the NES alumni community. It is a private, invite-driven space focused on thoughtful conversations, networking, and mutual help for alumni, staff, and friends of NES.
 
 Our values: honesty, fair share, respect for other members, rationality, friendliness and usefulness. We have a zero-tolerance policy on anonymity, insults and toxicity. But we always try to stay in touch with reality, so we're also not tolerant of witch hunting and call-out culture.
 
@@ -38,7 +38,7 @@ Feel free to propose "state of the art" refactorings for UI or backend code if y
 3. Run
 
     ```sh
-    $ docker compose up
+    $ docker compose up --build
     ```
 
 This will start the application in development mode on [http://127.0.0.1:8000/](http://127.0.0.1:8000/), as well as other necessary services: postgres database, queue with workers, redis and webpack. 
@@ -164,6 +164,6 @@ Take some time to press F and give some respects to our [best contributors](http
 
 In other words, you can use the code for private and commercial purposes with an author attribution (by including the original license file or mentioning the Club 🎩).
 
-Feel free to contact us via email [club@vas3k.club](mailto:club@vas3k.club).
+Feel free to contact us via email [atishin@nes.ru](mailto:atishin@nes.ru).
 
 ❤️

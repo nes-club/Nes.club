@@ -22,10 +22,10 @@
 
     {% block feeds %}
         <link rel="alternate" type="application/rss+xml"
-              title="Вастрик.Клуб: Новые посты"
+              title="Сообщество выпускников РЭШ: Новые посты"
               href="{{ settings.APP_HOST }}{% url "rss" %}" />
 
-        <link rel="alternate" title="Вастрик.Клуб: JSON Feed"
+        <link rel="alternate" title="Сообщество выпускников РЭШ: JSON Feed"
               type="application/feed+json"
               href="{{ settings.APP_HOST }}{% url "json_feed" %}" />
     {% endblock %}
@@ -57,7 +57,7 @@
 {% block footer %}
     <footer class="footer" id="footer">
         <div class="footer-left">
-            <a href="{% url "show_post" "docs" "about" %}">О Клубе</a> &nbsp;&middot;&nbsp;
+            <a href="{% url "show_post" "docs" "about" %}">О сообществе</a> &nbsp;&middot;&nbsp;
 
             <a href="{{ settings.VALUES_GUIDE_URL }}">Наши ценности</a> &nbsp;&middot;&nbsp;
 
@@ -75,11 +75,12 @@
 
             <a href="https://github.com/vas3k/vas3k.club">Опенсорс</a> &nbsp;&middot;&nbsp;
 
-            <a href="{% url "show_post" "docs" "blocked_dolor" %}">Оплата из России</a>
+            <a href="{% url "show_post" "docs" "contact" %}">Вопросы по доступу</a>
 
             <br><br>
 
-            CC BY-SA
+            CC BY-SA<br>
+            <span class="text-small">Неофициальный проект выпускников РЭШ</span>
         </div>
         <div class="footer-right">
             <theme-switcher></theme-switcher>

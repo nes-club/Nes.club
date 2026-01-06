@@ -18,7 +18,7 @@ from comments.api import api_list_post_comments
 from comments.views import create_comment, edit_comment, delete_comment, show_comment, upvote_comment, \
     retract_comment_vote, pin_comment, delete_comment_thread
 from common.feature_flags import feature_switch
-from invites.views import show_invite, list_invites, activate_invite, godmode_generate_invite_code
+from invites.views import show_invite, list_invites, activate_invite, create_invite, godmode_generate_invite_code
 from landing.views import landing
 from godmode.views.main import godmode, godmode_list_model, godmode_edit_model, godmode_delete_model, \
     godmode_create_model, godmode_show_page, godmode_action
@@ -29,10 +29,7 @@ from rooms.views import redirect_to_room_chat, list_rooms, toggle_room_subscript
 from notifications.views import render_weekly_digest, email_unsubscribe, email_confirm, email_digest_switch, \
     link_telegram
 from notifications.webhooks import webhook_event
-from payments.views.common import membership_expired
-from payments.api import api_gift_days
 from invites.api import api_gift_invite_link
-from payments.views.stripe import pay, done, stripe_webhook, stop_subscription
 from posts.api import md_show_post, api_show_post, json_feed
 from posts.models.post import Post
 from posts.rss import NewPostsRss
@@ -54,7 +51,7 @@ from users.views.messages import on_review, rejected, banned
 from users.views.muted import toggle_mute, muted
 from users.views.notes import edit_note
 from users.views.profile import profile, toggle_tag, profile_comments, profile_posts, profile_badges
-from users.views.settings import profile_settings, edit_profile, edit_account, edit_notifications, edit_payments, \
+from users.views.settings import profile_settings, edit_profile, edit_account, edit_notifications, \
     edit_bot, edit_data, request_data
 from users.views.intro import intro
 from users.views.people import people
@@ -87,13 +84,7 @@ urlpatterns = [
     path("auth/openid/token", openid_issue_token, name="openid_issue_token"),
     path("auth/openid/revoke", openid_revoke_token, name="openid_revoke_token"),
 
-    path("monies/", pay, name="pay"),
-    path("monies/done/", done, name="done"),
-    path("monies/membership_expired/", membership_expired, name="membership_expired"),
-    path("monies/subscription/<str:subscription_id>/stop/", stop_subscription, name="stop_subscription"),
-    path("monies/stripe/webhook/", stripe_webhook, name="stripe_webhook"),
     path("monies/stripe/webhook_tickets/", stripe_ticket_sale_webhook, name="stripe_tickets_webhook"),
-    path("monies/gift/<int:days>/<slug:user_slug>.json", api_gift_days, name="api_gift_days"),
 
     path("user/<slug:user_slug>/", profile, name="profile"),
     path("user/<slug:user_slug>.json", api_profile, name="api_profile"),
@@ -113,7 +104,6 @@ urlpatterns = [
     path("user/<slug:user_slug>/edit/account/", edit_account, name="edit_account"),
     path("user/<slug:user_slug>/edit/bot/", edit_bot, name="edit_bot"),
     path("user/<slug:user_slug>/edit/notifications/", edit_notifications, name="edit_notifications"),
-    path("user/<slug:user_slug>/edit/monies/", edit_payments, name="edit_payments"),
     path("user/<slug:user_slug>/edit/data/", edit_data, name="edit_data"),
     path("user/<slug:user_slug>/edit/data/request/", request_data, name="request_user_data"),
 
@@ -166,6 +156,7 @@ urlpatterns = [
     re_path(r"^label/(?P<label_code>[^/]+)/{}/$".format(ORDERING_RE), feed, name="feed_label_ordering"),
 
     path("invites/", list_invites, name="invites"),
+    path("invites/create/", create_invite, name="create_invite"),
     path("invites/generate_invite_code/", godmode_generate_invite_code, name="godmode_generate_invite_code"),
     path("invites/<slug:invite_code>/", show_invite, name="show_invite"),
     path("invites/<slug:invite_code>/activate/", activate_invite, name="activate_invite"),

@@ -46,7 +46,7 @@ class Command(BaseCommand):
             type=Post.TYPE_WEEKLY_DIGEST,
             defaults=dict(
                 author=User.objects.filter(slug="vas3k").first(),
-                title=f"Клубный журнал. Выпуск #{issue}: {digest_title}",
+                title=f"Журнал сообщества. Выпуск #{issue}: {digest_title}",
                 html=digest_without_footer,
                 text=digest_without_footer,
                 is_pinned_until=datetime.utcnow() + timedelta(days=1),
@@ -113,7 +113,7 @@ class Command(BaseCommand):
 
                 send_mass_email(
                     recipient=user.email,
-                    subject=f"✖︎ Клубный журнал #{issue}. {digest_title}",
+                    subject=f"✖︎ Журнал сообщества #{issue}. {digest_title}",
                     html=digest,
                     unsubscribe_link=f"{settings.APP_HOST}/notifications/unsubscribe/{user.id}/{secret_code}/"
                 )

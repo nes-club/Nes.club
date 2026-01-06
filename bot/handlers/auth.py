@@ -1,3 +1,4 @@
+from django.conf import settings
 from telegram import Update, ParseMode
 from telegram.error import Unauthorized
 from telegram.ext import CallbackContext
@@ -12,7 +13,7 @@ def command_auth(update: Update, context: CallbackContext) -> None:
     if not update.message or not update.message.text or " " not in update.message.text:
         update.effective_chat.send_message(
             "☝️ Нужно прислать мне секретный код. "
-            "Напиши /auth и код из <a href=\"https://vas3k.club/user/me/edit/bot/\">профиля в Клубе</a> "
+            f"Напиши /auth и код из <a href=\"{settings.APP_HOST}/user/me/edit/bot/\">профиля в сообществе</a> "
             "через пробел. Только не публикуй его в публичных чатах!",
             parse_mode=ParseMode.HTML
         )

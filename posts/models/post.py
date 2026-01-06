@@ -39,7 +39,7 @@ class Post(models.Model, ModelDiffMixin):
         (TYPE_PROJECT, "Проект"),
         (TYPE_EVENT, "Событие"),
         (TYPE_BATTLE, "Батл"),
-        (TYPE_WEEKLY_DIGEST, "Журнал Клуба"),
+        (TYPE_WEEKLY_DIGEST, "Журнал сообщества"),
         (TYPE_GUIDE, "Путеводитель"),
         (TYPE_THREAD, "Тред"),
         (TYPE_DOCS, "Доки"),

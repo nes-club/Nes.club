@@ -10,8 +10,8 @@ from authn.models.session import Session
 from club.exceptions import AccessDenied
 from invites.models import Invite
 from payments.models import Payment
-from payments.products import club_subscription_activator, PRODUCTS
 from users.models.user import User
+from users.services.access import grant_long_membership
 from utils.strings import random_string
 
 
@@ -95,8 +95,7 @@ def activate_invite(request, invite_code):
         ),
     )
 
-    # activate subscription
-    club_subscription_activator(PRODUCTS[invite.payment.product_code], invite.payment, user)
+    grant_long_membership(user)
 
     # expire the invite
     invite.used_at = now
@@ -123,7 +122,25 @@ def godmode_generate_invite_code(request):
         payment=Payment.create(
             reference="god-" + random_string(length=16),
             user=request.me,
-            product=PRODUCTS["club1_invite"],
+            product={"code": "invite", "amount": 0},
+            status=Payment.STATUS_SUCCESS,
+        )
+    )
+
+    return redirect("invites")
+
+
+@require_auth
+def create_invite(request):
+    if request.method != "POST":
+        raise Http404()
+
+    Invite.objects.create(
+        user=request.me,
+        payment=Payment.create(
+            reference="invite-" + random_string(length=16),
+            user=request.me,
+            product={"code": "invite", "amount": 0},
             status=Payment.STATUS_SUCCESS,
         )
     )

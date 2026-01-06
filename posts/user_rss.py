@@ -13,7 +13,7 @@ class UserPostsRss(NewPostsRss):
         return f"/user/{user.slug}/posts.rss"
 
     def title(self, user):
-        return f"Вастрик.Клуб: Посты {user.slug}"
+        return f"Сообщество выпускников РЭШ: Посты {user.slug}"
 
     def items(self, user):
         return Post.visible_objects()\

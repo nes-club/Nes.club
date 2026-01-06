@@ -51,8 +51,11 @@ def check_user_permissions(request, **context):
         return None
 
     if not request.me.is_active_membership:
-        log.info("User membership expired. Redirecting to payments page...")
-        return redirect("membership_expired")
+        log.info("User membership expired. Showing access message...")
+        return render(request, "error.html", {
+            "title": "Доступ временно ограничен",
+            "message": "Ваш доступ истек. Напишите в поддержку: atishin@nes.ru.",
+        })
 
     if request.me.is_banned:
         log.info("User was banned. Redirecting to 'banned' page...")

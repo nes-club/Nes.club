@@ -6,12 +6,12 @@
 
 {% block content %}
     <div class="content user-edit">
-        <div class="form-title"><strong class="text-200">🎁</strong><br>Вам подарили 1 год в Клубе</div>
+        <div class="form-title"><strong class="text-200">🎁</strong><br>Вам подарили доступ</div>
 
         <div class="block">
             <div class="block-description block-description-center">
                 <p>
-                    Ого! <strong>{{ invite.user.full_name }}</strong> подарил вам 1 год подписки на Вастрик Клуб. Должно быть, вы это заслужили! 🥳
+                    Ого! <strong>{{ invite.user.full_name }}</strong> подарил вам доступ в сообщество. Должно быть, вы это заслужили! 🥳
                 </p>
 
                 {% if request.me %}
@@ -31,7 +31,7 @@
                 {% else %}
                     <p>
                         Введите адрес своей электронной почты, чтобы создать аккаунт.
-                        А если вы уже в Клубе — укажите email существующего аккаунта, либо сначала <a href="{% url "login" %}"><strong>войдите</strong></a> в него.
+                        А если вы уже в сообществе — укажите email существующего аккаунта, либо сначала <a href="{% url "login" %}"><strong>войдите</strong></a> в него.
                     </p>
 
                     <br>
@@ -41,7 +41,7 @@
 
                         <div class="form-row">
                             <label for="invited-email" class="form-label"><strong>Ваша почта 👇</strong></label>
-                            <input type="email" name="email" id="invited-email" placeholder="your@gmail.com" {% if request.me %}value="{{ request.me.email }}"{% endif %} required>
+                            <input type="email" name="email" id="invited-email" placeholder="name@nes.ru" {% if request.me %}value="{{ request.me.email }}"{% endif %} required>
                         </div>
 
                         <div class="form-row">

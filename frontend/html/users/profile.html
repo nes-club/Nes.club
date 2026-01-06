@@ -12,7 +12,7 @@
 
 {% block feeds %}
     <link rel="alternate" type="application/rss+xml"
-          title="Вастрик.Клуб: Посты {{ user.slug }}"
+          title="Сообщество выпускников РЭШ: Посты {{ user.slug }}"
           href="{{ settings.APP_HOST }}{% url "user_rss" user.slug %}" />
 {% endblock %}
 
@@ -47,10 +47,6 @@
             <div class="profile-settings">
                 <a href="{% url "profile_settings" user.slug %}" class="button">
                     ⚙️&nbsp;Настройки профиля
-                </a>
-
-                <a href="{% url "edit_payments" user.slug %}" class="button">
-                    💎&nbsp;Баланс: {{ user.membership_days_left | cool_number }} {{ user.membership_days_left | rupluralize:"день,дня,дней" }}
                 </a>
 
                 <a href="{% url "friends" user.slug %}" class="button">
@@ -91,7 +87,7 @@
                     {% endif %}
                 {% elif user.deleted_at %}
                     <span class="profile-status-icon">🏃‍♀️</span>
-                    <span class="profile-status-text">удалился из Клуба</span>
+                    <span class="profile-status-text">удалился из сообщества</span>
                 {% elif not user.is_moderation_approved %}
                     <span class="profile-status-icon">⚖️</span>
                     <span class="profile-status-text">на модерации</span>
@@ -104,13 +100,13 @@
                 {% else %}
                     {% if user.membership_created_days < 150 %}
                         <span class="profile-status-number">⏳ {{ user.membership_created_days | ceil | cool_number }}</span>
-                        <span class="profile-status-text">{{ user.membership_created_days | ceil | rupluralize:"день,дня,дней" }} в Клубе</span>
+                        <span class="profile-status-text">{{ user.membership_created_days | ceil | rupluralize:"день,дня,дней" }} в сообществе</span>
                     {% elif user.membership_created_days <= 730 %}
                         <span class="profile-status-number">⏳ {{ user.membership_created_days | days_to_months | cool_number  }}</span>
-                        <span class="profile-status-text">{{ user.membership_created_days | days_to_months | rupluralize:"месяц,месяца,месяцев" }} в Клубе</span>
+                        <span class="profile-status-text">{{ user.membership_created_days | days_to_months | rupluralize:"месяц,месяца,месяцев" }} в сообществе</span>
                     {% else %}
                         <span class="profile-status-number">⏳ {{ user.membership_created_days | days_to_years | cool_number }}</span>
-                        <span class="profile-status-text">{{ user.membership_created_days | days_to_years | rupluralize:"год,года,лет" }} в Клубе</span>
+                        <span class="profile-status-text">{{ user.membership_created_days | days_to_years | rupluralize:"год,года,лет" }} в сообществе</span>
                     {% endif %}
                 {% endif %}
             </div>
@@ -161,7 +157,7 @@
                     {% else %}
                         <a href="{% url "toggle_mute" user.slug %}" class="profile-status clickable">
                             <span class="profile-status-icon">⛔️</span>
-                            <span class="profile-status-status">Я не хочу видеть этого юзера в Клубе</span>
+                            <span class="profile-status-status">Я не хочу видеть этого юзера в сообществе</span>
                         </a>
                     {% endif %}
                 {% endif %}
@@ -323,7 +319,7 @@
         {% endif %}
 
         {% if achievements %}
-            <div class="profile-header">Ачивки от Клуба</div>
+            <div class="profile-header">Ачивки от сообщества</div>
 
             <div class="profile-achievements">
                 <div class="user-achievements">

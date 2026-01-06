@@ -230,7 +230,7 @@ def generate_weekly_digest(no_footer=False):
 
     og_params = urlencode({
         **settings.OG_IMAGE_GENERATOR_DEFAULTS,
-        "title": f"Клубный журнал. Итоги недели. Выпуск #{issue_number}.",
+        "title": f"Журнал сообщества. Итоги недели. Выпуск #{issue_number}.",
         "author": "THE MACHINE",
         "ava": settings.OG_MACHINE_AUTHOR_LOGO
     })

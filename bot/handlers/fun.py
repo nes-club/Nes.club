@@ -13,7 +13,7 @@ from posts.models.post import Post
 def command_horo(update: Update, context: CallbackContext) -> None:
     horoscope = parse_horoscope()
     update.effective_chat.send_message(
-        "Сегодня {club_day} день от сотворения Клуба, {phase_sign}\n\n{phase_description}".format(**horoscope)
+        "Сегодня {club_day} день от старта сообщества, {phase_sign}\n\n{phase_description}".format(**horoscope)
     )
 
 
@@ -39,4 +39,3 @@ def command_random(update: Update, context: CallbackContext) -> None:
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True,
     )
-

@@ -8,7 +8,7 @@ def notify_user_ban(user, days, reason):
     if user.telegram_id:
         send_telegram_message(
             chat=Chat(id=user.telegram_id),
-            text=f"⛔ <b>К сожалению, вы получили бан в Клубе на {days} дней</b>.\n\n"
+            text=f"⛔ <b>К сожалению, вы получили бан в сообществе на {days} дней</b>.\n\n"
                  f"<b>Причина:</b> {reason}"
         )
 

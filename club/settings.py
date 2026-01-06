@@ -18,7 +18,7 @@ ALLOWED_HOSTS = ["*", "127.0.0.1", "localhost", "0.0.0.0", "vas3k.club", "ru.vas
 INTERNAL_IPS = ["127.0.0.1"]
 
 ADMINS = [
-    ("admin", "club@vas3k.club"),
+    ("admin", "atishin@nes.ru"),
     ("vas3k", "me@vas3k.ru"),
 ]
 
@@ -187,11 +187,13 @@ EMAIL_PORT = os.getenv("EMAIL_PORT", 587)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Вастрик.Клуб <club@vas3k.club>")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Сообщество выпускников РЭШ <atishin@nes.ru>")
 
 # App
 
 APP_HOST = os.environ.get("APP_HOST") or "http://127.0.0.1:8000"
+APP_NAME = os.environ.get("APP_NAME") or "Сообщество выпускников РЭШ"
+APP_TITLE = os.environ.get("APP_TITLE") or "Сообщество выпускников РЭШ"
 LAUNCH_DATE = datetime(2020, 4, 13)
 
 AUTH_CODE_LENGTH = 6
@@ -307,7 +309,7 @@ MIN_DAYS_TO_GIVE_BADGES = 50  # minimum "days" balance to buy and gift any badge
 MAX_MUTE_COUNT = 25  # maximum number of users allowed to mute
 CLEARED_POST_TEXT = "```\n" \
     "😥 Этот пост был удален самим автором и от него остались лишь комментарии участников. " \
-    "Если вы хотите приютить и развить эту тему как новый автор, напишите модераторам Клуба: moderator@vas3k.club." \
+    "Если вы хотите приютить и развить эту тему как новый автор, напишите модераторам сообщества: atishin@nes.ru." \
     "\n```"
 
 

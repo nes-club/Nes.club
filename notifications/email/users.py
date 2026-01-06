@@ -10,7 +10,7 @@ def send_registration_email(user: User):
     registration_template = loader.get_template("emails/registration.html")
     send_transactional_email(
         recipient=user.email,
-        subject=f"Ваша Клубная Карта 🪪",
+        subject=f"Ваш доступ в сообщество 🪪",
         html=registration_template.render({"user": user}),
         tags=["registration"]
     )
@@ -121,7 +121,7 @@ def send_delete_account_confirm_email(user: User):
     auth_template = loader.get_template("emails/delete_account_confirm.html")
     send_transactional_email(
         recipient=user.email,
-        subject=f"✌️ Ваш аккаунт в Клубе будет удалён",
+        subject=f"✌️ Ваш аккаунт в сообществе будет удалён",
         html=auth_template.render({"user": user}),
         tags=["killme"]
     )

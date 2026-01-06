@@ -5,7 +5,6 @@ from club.exceptions import ApiAccessDenied
 from common.api import API
 from invites.models import Invite
 from payments.models import Payment
-from payments.products import PRODUCTS
 from utils.strings import random_string
 
 
@@ -26,7 +25,7 @@ def api_gift_invite_link(request):
             payment=Payment.create(
                 reference=API.get_str(request, "reference") or "bank-" + random_string(length=16),
                 user=request.me,
-                product=PRODUCTS["club1_invite"],
+                product={"code": "invite", "amount": 0},
                 status=Payment.STATUS_SUCCESS,
                 data={
                     "source": "bank",

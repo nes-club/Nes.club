@@ -47,7 +47,7 @@ ul {
 {% endblock %}
 
 {% block logo %}
-<a href="https://vas3k.club">
+<a href="{{ settings.APP_HOST }}">
     <img src="{{ settings.APP_HOST }}{% static "images/logo/logo-256.png" %}" alt="" height="80" width="80" style="display:inline-block;width: 80px;height: 80px;min-width: 80px; margin-top: 30px;">
 </a>
 {% endblock %}
@@ -58,7 +58,7 @@ ul {
 
 {% block body %}
     <p>
-        Это ваш код для входа в Клуб.
+        Это ваш код для входа в сообщество.
     </p>
 
     <p>
@@ -66,7 +66,7 @@ ul {
     </p>
 
     <p>
-        <a href="{{ settings.APP_HOST }}{% url "email_login_code" %}?email={{ code.recipient | urlencode }}&code={{ code.code }}" class="button">Войти в Клуб</a>
+        <a href="{{ settings.APP_HOST }}{% url "email_login_code" %}?email={{ code.recipient | urlencode }}&code={{ code.code }}" class="button">Войти</a>
     </p>
 
     <p>

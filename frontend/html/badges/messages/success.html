@@ -22,11 +22,11 @@
             <p style="font-weight: 500; font-size: 140%; margin: 50px 30px 0;">
                 🚨 Кстати, у вас {{ membership_days_remaining|rupluralize:"остался,осталось,осталось" }}
                 всего {{ membership_days_remaining|floor }} {{ membership_days_remaining|rupluralize:"день,дня,дней" }} членства.
-                Не забудьте <a href="{% url "edit_payments" me.slug %}">пополнить их</a>, чтобы не потерять аккаунт в Клубе.
+                Следите за балансом, чтобы не потерять доступ в сообщество.
             </p>
 
             <p>
-                <a class="button" href="{% url "edit_payments" me.slug %}">♥️ Пополнить баланс</a>
+                <a class="button" href="mailto:atishin@nes.ru">♥️ Написать в поддержку</a>
             </p>
         {% endif %}
 

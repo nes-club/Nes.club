@@ -10,7 +10,7 @@ DOCS = [
     {
         "slug": "blocked_dolor",
         "type": "docs",
-        "title": "💰 Как платить за Клуб из России и Беларуси",
+        "title": "💰 Альтернативные способы оплаты",
         "text": "WRITE ME",
         "is_visible": True,
         "is_visible_in_feeds": False,
@@ -20,7 +20,7 @@ DOCS = [
     {
         "slug": "contact",
         "type": "docs",
-        "title": "📞 Связь с Клубом",
+        "title": "📞 Связь с сообществом",
         "text": "WRITE ME",
         "is_visible": True,
         "is_visible_in_feeds": False,
@@ -40,7 +40,7 @@ DOCS = [
     {
         "slug": "about",
         "type": "docs",
-        "title": "О Клубе 🎩",
+        "title": "О сообществе 🎓",
         "text": "WRITE ME",
         "is_visible": True,
         "is_visible_in_feeds": False,
@@ -57,11 +57,11 @@ def create_moderator_user(apps, schema_editor):
     User.objects.get_or_create(
         slug=MODERATOR_USERNAME,
         defaults=dict(
-            email="moderator@vas3k.club",
+            email="atishin@nes.ru",
             secret_hash=random_string(length=20),
             membership_platform_type="direct",
             full_name="Модератор",
-            company="Вастрик.Клуб",
+            company="Сообщество выпускников РЭШ",
             position="Бдю",
             city="Берлин",
             country="Германия",
@@ -140,7 +140,7 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 choices=[('post', 'Текст'), ('intro', '#intro'), ('link', 'Ссылка'), ('question', 'Вопрос'),
                          ('idea', 'Идея'), ('project', 'Проект'), ('event', 'Событие'), ('battle', 'Батл'),
-                         ('weekly_digest', 'Журнал Клуба'), ('guide', 'Путеводитель'), ('thread', 'Тред'),
+                         ('weekly_digest', 'Журнал сообщества'), ('guide', 'Путеводитель'), ('thread', 'Тред'),
                          ('docs', 'Доки')], db_index=True, default='post', max_length=32),
         ),
         migrations.AlterField(
@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 choices=[('post', 'Текст'), ('intro', '#intro'), ('link', 'Ссылка'), ('question', 'Вопрос'),
                          ('idea', 'Идея'), ('project', 'Проект'), ('event', 'Событие'), ('battle', 'Батл'),
-                         ('weekly_digest', 'Журнал Клуба'), ('guide', 'Путеводитель'), ('thread', 'Тред'),
+                         ('weekly_digest', 'Журнал сообщества'), ('guide', 'Путеводитель'), ('thread', 'Тред'),
                          ('docs', 'Доки')], db_index=True, default='post', max_length=32),
         ),
         migrations.RunPython(create_moderator_user),
