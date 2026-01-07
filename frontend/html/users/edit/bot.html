@@ -27,11 +27,15 @@
                     {% endif %}
                 </p>
 
-                <p>
-                    <a href="{{ settings.TELEGRAM_BOT_URL }}?start={{ me.secret_hash }}" target="_blank" class="button button-blue">
-                        Привязать бота
-                    </a>
-                </p>
+                {% if settings.TELEGRAM_BOT_URL %}
+                    <p>
+                        <a href="{{ settings.TELEGRAM_BOT_URL }}?start={{ me.secret_hash }}" target="_blank" class="button button-blue">
+                            Привязать бота
+                        </a>
+                    </p>
+                {% else %}
+                    <p>Бот будет доступен после настройки TELEGRAM_BOT_URL.</p>
+                {% endif %}
 
                 <p style="font-size: 80%; opacity: 0.8; padding-top: 80px;">
                     🥶️ Если совсем ничего не помогает, откройте бота и скопируйте ему команду:<br>

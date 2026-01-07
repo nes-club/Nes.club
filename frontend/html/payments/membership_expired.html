@@ -2,60 +2,27 @@
 
 {% block content %}
     <div class="block membership-expired">
-
-        <div class="membership-expired-title">Ваш доступ истек 💩</div>
-
-
-        {% if features.PATREON_AUTH_ENABLED and me.membership_platform_type == "patreon" %}
-            <div class="membership-expired-description">
-                <p>
-                    Кажется, вы всё еще используете старый метод оплаты через Патреон.
-                    Нажмите на кнопку ниже, чтобы синхронизировать ваш профиль.
-                </p>
-
-                <a href="{% url "patreon_sync" %}" class="button login-button login-button-patreon"><i class="fab fa-patreon"></i>&nbsp;Обновить данные</a>
-
-                <p>
-                    <br>
-                    Либо перейдите на нормальную оплату, тогда всё будет надолго и автоматически 👇
-                </p>
-            </div>
-        {% else %}
-            <div class="membership-expired-description">
-                <p>
-                    Так случается, когда вы давно не продлевали участие или на вашей карте просто не осталось денег.
-                </p>
-                <p>
-                    Давайте сделаем с этим что-нибудь!
-                </p>
-            </div>
-        {% endif %}
-    </div>
-
-
-    <div class="block-header" id="select_package">Продлевать будем?</div>
-
-    <br>
-
-    <form action="{% url "pay" %}" method="get">
-
-        {% include "payments/blocks/packages.html" %}
-
-        <br>
-
-        <input type="hidden" name="email" value="{{ me.email }}">
-
-        <button type="submit" class="button button-big join-button">Продлить 🤙</button>
-
-    </form>
-
-
-    <div class="block membership-expired" style="margin-top: 280px;">
-        <div class="membership-expired-title">☠️ Нафиг вас, я хочу удалиться!</div>
+        <div class="membership-expired-title">Доступ временно ограничен</div>
 
         <div class="membership-expired-description">
             <p>
-                Без проблем. Напишите «{{ settings.GDPR_DELETE_CONFIRMATION }}» в поле внизу — это запустит процесс очистки и удаления вашего профиля из сообщества насовсем.
+                В сообществе нет платного членства. Доступ предоставляется выпускникам, сотрудникам и друзьям РЭШ
+                по почте <strong>@nes.ru</strong> или по инвайту.
+            </p>
+            <p>
+                Если доступ нужно продлить или что-то пошло не так — пишите на
+                <strong><a href="mailto:atishin@nes.ru">atishin@nes.ru</a></strong>.
+            </p>
+        </div>
+    </div>
+
+    <div class="block membership-expired" style="margin-top: 280px;">
+        <div class="membership-expired-title">☠️ Хочу удалить аккаунт</div>
+
+        <div class="membership-expired-description">
+            <p>
+                Без проблем. Напишите «{{ settings.GDPR_DELETE_CONFIRMATION }}» в поле ниже — это запустит процесс
+                очистки и удаления профиля из сообщества насовсем.
             </p>
         </div>
 

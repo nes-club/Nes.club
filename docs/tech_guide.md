@@ -2,7 +2,7 @@
 
 ## Как получить доступ в джанго админку
 1. В консоли сервера выполнить команду docker exec -it club_app python3 manage.py createsuperuser
-1. Открыть в браузере https://<ваш домен>/godmode/admin
+1. Открыть в браузере https://<ваш домен>/admin
 1. Залогиниться под созданным логином
 
 ## Как стать суперпользователем в клубе
@@ -77,14 +77,14 @@
    1. Бог - может все
 
 ## Как сделать дамп базы
-1. Запустить в консоли сервера команду `docker exec club_postgres pg_dump --clean --if-exists --no-owner --no-privileges "host=localhost port=5432 dbname=vas3k_club user=vas3k password=vas3k" | gzip > dump.sql.gz`
+1. Запустить в консоли сервера команду `docker exec club_postgres pg_dump --clean --if-exists --no-owner --no-privileges "host=localhost port=5432 dbname=nes_club user=nes password=nes" | gzip > dump.sql.gz`
 
 ## Как залить дамп базы
 1. `docker cp dump.sql.gz club_postgres:/tmp/`
 1. `docker exec -it club_postgres bash`
 1. `cd /tmp`
 1. `gunzip dump.sql.gz`
-1. `psql -d vas3k_club -h localhost -U vas3k --password vas3k -w < dump.sql` 
+1. `psql -d nes_club -h localhost -U nes --password nes -w < dump.sql` 
 
 ## У меня не получается, что делать?
-Все вопросы можете смело адресовать [автору этого гайда](https://vas3k.club/user/glader/)
+Все вопросы адресуйте владельцу вашего проекта или администратору инсталляции.

@@ -51,9 +51,7 @@ class TestPaymentModel(TestCase):
 
     def test_show_draft_post(self):
         '''
-        Is regression test for #545.
-
-        https://github.com/vas3k/vas3k.club/issues/545
+        Regression test for draft visibility.
         '''
         scenarios = itertools.product([None, self.user], [True, False])
         for user, post_is_public in scenarios:

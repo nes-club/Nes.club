@@ -3,7 +3,7 @@
 # Makes shell non-interactive and exit on any error
 .SHELLFLAGS = -ec
 
-PROJECT_NAME=vas3k_club
+PROJECT_NAME=nes_club
 
 run-dev:  ## Runs dev server
 	pipenv run python manage.py runserver 0.0.0.0:8000
@@ -18,9 +18,13 @@ run-bot:  ## Runs telegram bot
 	pipenv run python bot/main.py
 
 docker-run-bot:
+	python3 ./utils/wait_for_postgres.py
+	python3 ./utils/wait_for_migrations.py
 	python3 bot/main.py
 
 docker-run-helpdeskbot:
+	python3 ./utils/wait_for_postgres.py
+	python3 ./utils/wait_for_migrations.py
 	python3 helpdeskbot/main.py
 
 docker-run-cron:
@@ -67,7 +71,7 @@ test-ci:   ## Run tests (intended for CI usage)
 	python3 manage.py test
 
 psql:
-	psql -h localhost -p 5433 -d vas3k_club -U vas3k
+	psql -h localhost -p 5433 -d nes_club -U postgres
 
 .PHONY: \
   docker-run-dev \

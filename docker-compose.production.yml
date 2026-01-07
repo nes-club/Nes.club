@@ -11,14 +11,15 @@ services:
     environment:
       - MODE=production
       - PYTHONUNBUFFERED=1
+      - PYTHONWARNINGS=ignore
       - DEBUG=false
       - APP_HOST
       - MEDIA_UPLOAD_URL
       - REDIS_DB=0
       - REDIS_HOST=redis
-      - POSTGRES_DB=vas3k_club
-      - POSTGRES_USER=vas3k
-      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_HOST
       - POSTGRES_USE_POOLING=1
       - POSTGRES_PASSWORD
       - EMAIL_HOST
@@ -47,14 +48,15 @@ services:
     environment:
       - MODE=production
       - PYTHONUNBUFFERED=1
+      - PYTHONWARNINGS=ignore
       - DEBUG=false
       - APP_HOST
       - MEDIA_UPLOAD_URL
       - REDIS_DB=0
       - REDIS_HOST=redis
-      - POSTGRES_DB=vas3k_club
-      - POSTGRES_USER=vas3k
-      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_HOST
       - POSTGRES_PASSWORD
       - EMAIL_HOST
       - EMAIL_PORT

@@ -43,9 +43,9 @@ class Command(BaseCommand):
             self.stdout.write(f"Scanning {scan_date}. Found {len(expired_intros)} outdated intros...")
             # self.stdout.write(str([intro.author.slug for intro in expired_intros]))
 
-            # debug mode — send everything to vas3k
+            # debug mode — send everything to moderator
             if not options.get("production"):
-                expired_intros = Post.objects.filter(slug="vas3k")
+                expired_intros = Post.objects.filter(slug=settings.MODERATOR_USERNAME)
 
             for expired_intro in expired_intros:
                 user = expired_intro.author

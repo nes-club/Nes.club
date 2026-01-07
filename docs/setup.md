@@ -19,7 +19,7 @@ Once you decided to code something in the project you'll need to setup your envi
   ```
   When you need to connect to postgres use next params:
   ```dotenv
-  POSTGRES_DB=vas3k_club
+  POSTGRES_DB=nes_club
   POSTGRES_USER=postgres
   POSTGRES_PASSWORD=postgres
   POSTGRES_HOST=localhost
@@ -34,21 +34,21 @@ Once you decided to code something in the project you'll need to setup your envi
           ```sh
           # create db
           $ psql postgres
-          postgres=# createdb vas3k_club
+          postgres=# createdb nes_club
 
-          # create user (user: vas3k, password: vas3k)
+          # create user (user: nes, password: nes)
           postgres=# createuser --interactive --pwpromp
 
           # grant priviliges
-          postgres=# GRANT ALL PRIVILEGES ON DATABASE vas3k_club TO vas3k;
-          postgres=# \connect vas3k_club
-          postgres=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO vas3k;
-          postgres=# GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to vas3k;
-          postgres=# GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to vas3k;
+          postgres=# GRANT ALL PRIVILEGES ON DATABASE nes_club TO nes;
+          postgres=# \connect nes_club
+          postgres=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO nes;
+          postgres=# GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to nes;
+          postgres=# GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to nes;
           postgres=# \q
 
           # check connection
-          $ psql -d vas3k_club -U vas3k
+          $ psql -d nes_club -U nes
           ```
 
   </details>
@@ -86,13 +86,13 @@ To run telegram bot you have to:
 
 ## Docker-compose
 
-Check out our [docker-compose.yml](https://github.com/vas3k/vas3k.club/blob/master/docker-compose.yml) to understand the infrastructure.
+Check out `docker-compose.yml` in this repository to understand the infrastructure.
 
-## Load posts from main vas3k.club to dev/local database
+## Load posts from production to dev/local database
 
 Sometimes you need fill saome posts/users data from real project. For this case you can use `import_posts_to_dev` command.
 
-Command fetch https://vas3k.club/feed.json and copy `is_public=True` posts to your database:
+Command fetches `{APP_HOST}/feed.json` and copies `is_public=True` posts to your database:
 ```bash
 # fetch first page
 $ python3 manage.py import_posts_to_dev
@@ -109,7 +109,7 @@ $ python3 manage.py import_posts_to_dev --pages 10 --skip 5 --force
 # if use docker-compose
 $ docker exec -it club_app python3 manage.py import_posts_to_dev --pages 2
 ```
-You can also import private posts and comments, but you will need to create an application (https://vas3k.club/apps/create/) and use `service_token` to do this.
+You can also import private posts and comments, but you will need to create an application in your project and use `service_token` to do this.
 ```bash
 # fetch first page with comments
 $ python3 manage.py import_posts_to_dev --with-comments --service-token XXX

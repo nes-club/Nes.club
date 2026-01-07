@@ -20,7 +20,9 @@
 
                 <p>
                     Для начала <strong>прочитайте <a href="{% url "show_post" "docs" "about" %}">наши правила</a></strong> и <strong><a href="{{ settings.VALUES_GUIDE_URL }}">ценности</a></strong>. Потом налейте себе вина и заполните форму ниже.
-                    Если вы тут впервые, можете пойти почитать открытые посты <a href="{{ settings.TELEGRAM_CLUB_CHANNEL_URL }}" rel="noreferrer" target="_blank">на канале</a> и вернуться сюда позднее.
+                    {% if settings.TELEGRAM_CLUB_CHANNEL_URL %}
+                        Если вы тут впервые, можете пойти почитать открытые посты <a href="{{ settings.TELEGRAM_CLUB_CHANNEL_URL }}" rel="noreferrer" target="_blank">на канале</a> и вернуться сюда позднее.
+                    {% endif %}
                 </p>
 
                 <p>
@@ -213,29 +215,29 @@
 
             <div class="block network-block" id="main">
                 <div class="network-channels">
-                    <a href="{{ settings.TELEGRAM_CLUB_CHANNEL_URL }}" rel="noreferrer" target="_blank" class="network-channel">
-                        <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
-                        <span class="network-channel-name text-120">Телеграм-канал сообщества</span>
-                        <span class="network-channel-description">Лучшие посты, отобранные руками</span>
-                    </a>
+                    {% if settings.TELEGRAM_CLUB_CHANNEL_URL %}
+                        <a href="{{ settings.TELEGRAM_CLUB_CHANNEL_URL }}" rel="noreferrer" target="_blank" class="network-channel">
+                            <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
+                            <span class="network-channel-name text-120">Телеграм-канал сообщества</span>
+                            <span class="network-channel-description">Лучшие посты, отобранные руками</span>
+                        </a>
+                    {% endif %}
 
-                    <a href="{{ settings.TELEGRAM_BOT_URL }}" rel="noreferrer" target="_blank" class="network-channel">
-                        <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
-                        <span class="network-channel-name text-120">Бот сообщества</span>
-                        <span class="network-channel-description">Основной способ получать уведомления</span>
-                    </a>
+                    {% if settings.TELEGRAM_BOT_URL %}
+                        <a href="{{ settings.TELEGRAM_BOT_URL }}" rel="noreferrer" target="_blank" class="network-channel">
+                            <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
+                            <span class="network-channel-name text-120">Бот сообщества</span>
+                            <span class="network-channel-description">Основной способ получать уведомления</span>
+                        </a>
+                    {% endif %}
 
-                    <a href="{{ settings.TELEGRAM_CLUB_CHAT_URL }}" rel="noreferrer" target="_blank" class="network-channel">
-                        <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
-                        <span class="network-channel-name text-120">Главный чат</span>
-                        <span class="network-channel-description">Главная флудилка сообщества, заходите когда весело</span>
-                    </a>
-
-                    <a href="https://twitter.com/vas3k_club" target="_blank" class="network-channel">
-                        <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
-                        <span class="network-channel-name text-120">Твиттер-фид</span>
-                        <span class="network-channel-description">Бездушная машина постит ссылки на новые посты</span>
-                    </a>
+                    {% if settings.TELEGRAM_CLUB_CHAT_URL %}
+                        <a href="{{ settings.TELEGRAM_CLUB_CHAT_URL }}" rel="noreferrer" target="_blank" class="network-channel">
+                            <span class="avatar network-channel-image" style="background-image: url('{% static "images/logo/logo-512.png" %}');"></span>
+                            <span class="network-channel-name text-120">Главный чат</span>
+                            <span class="network-channel-description">Главная флудилка сообщества, заходите когда весело</span>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -249,9 +251,13 @@
                     Лучше сразу его подключить, иначе потом забудете и пропустите всё важное.
                 </p>
 
-                <a href="{{ settings.TELEGRAM_BOT_URL }}?start={{ me.secret_hash }}" target="_blank" class="button button-blue">
-                    🤝 Привязать бота 🤝
-                </a>
+                {% if settings.TELEGRAM_BOT_URL %}
+                    <a href="{{ settings.TELEGRAM_BOT_URL }}?start={{ me.secret_hash }}" target="_blank" class="button button-blue">
+                        🤝 Привязать бота 🤝
+                    </a>
+                {% else %}
+                    <p>Бот будет доступен после настройки TELEGRAM_BOT_URL.</p>
+                {% endif %}
             </div>
 
             <div class="clearfix100"></div>

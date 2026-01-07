@@ -31,7 +31,7 @@ class GodmodeMassEmailForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "maxlength": 50000,
-                "placeholder": "vas3k,pivas3k,me@vas3k.ru",
+                "placeholder": "nes_alumni_1,nes_alumni_2,me@nes.ru",
             }
         ),
     )

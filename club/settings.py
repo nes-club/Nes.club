@@ -1,4 +1,5 @@
 import os
+import warnings
 from datetime import timedelta, datetime
 
 import sentry_sdk
@@ -7,6 +8,15 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 load_dotenv()
+
+warnings.filterwarnings(
+    "ignore",
+    message="python-telegram-bot is using upstream urllib3.*",
+)
+warnings.filterwarnings(
+    "ignore",
+    message="Using requests library for http requests.*",
+)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,7 +32,11 @@ ADMINS = [
 ]
 
 INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
@@ -53,9 +67,13 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "club.middleware.me",
     "club.middleware.ExceptionMiddleware",
 ]
@@ -75,6 +93,8 @@ TEMPLATES = [
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
                 "club.context_processors.settings_processor",
                 "club.context_processors.features_processor",
                 "users.context_processors.users.me",
@@ -108,7 +128,7 @@ LOGGING = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB") or "vas3k_club",
+        "NAME": os.getenv("POSTGRES_DB") or "nes_club",
         "USER": os.getenv("POSTGRES_USER") or "postgres",
         "PASSWORD": os.getenv("POSTGRES_PASSWORD") or "",
         "HOST": os.getenv("POSTGRES_HOST") or "localhost",
@@ -148,7 +168,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "frontend/static")]
 REDIS_HOST = os.getenv("REDIS_HOST") or "localhost"
 REDIS_PORT = os.getenv("REDIS_PORT") or 6379
 Q_CLUSTER = {
-    "name": "vas3k_club",
+    "name": "nes_club",
     "workers": 4,
     "recycle": 500,
     "timeout": 30,
@@ -180,7 +200,7 @@ LANDING_CACHE_TIMEOUT = 60 * 60 * 24  # 24 hours
 
 # Email
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("EMAIL_HOST", "email-smtp.eu-central-1.amazonaws.com")
 EMAIL_PORT = os.getenv("EMAIL_PORT", 587)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
@@ -266,7 +286,7 @@ OG_IMAGE_GENERATOR_DEFAULTS = {
 }
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_BOT_URL = os.getenv("TELEGRAM_BOT_URL") or "https://t.me/vas3k_club_bot"
+TELEGRAM_BOT_URL = os.getenv("TELEGRAM_BOT_URL") or ""
 TELEGRAM_ADMIN_CHAT_ID = os.getenv("TELEGRAM_ADMIN_CHAT_ID")
 TELEGRAM_VIBES_CHAT_ID = -1002158547445
 TELEGRAM_PARLIAMENT_CHAT_ID = -1001148097898
@@ -276,7 +296,7 @@ TELEGRAM_CLUB_CHAT_URL = os.getenv("TELEGRAM_CLUB_CHAT_URL")
 TELEGRAM_CLUB_CHAT_ID = os.getenv("TELEGRAM_CLUB_CHAT_ID")
 TELEGRAM_ONLINE_CHANNEL_URL = os.getenv("TELEGRAM_ONLINE_CHANNEL_URL")
 TELEGRAM_ONLINE_CHANNEL_ID = os.getenv("TELEGRAM_ONLINE_CHANNEL_ID")
-TELEGRAM_PAY_BOT_URL = "https://t.me/vas3kpaybot"
+TELEGRAM_PAY_BOT_URL = os.getenv("TELEGRAM_PAY_BOT_URL") or ""
 TELEGRAM_BOT_WEBHOOK_URL = f"{APP_HOST}/telegram/webhook/"
 TELEGRAM_BOT_WEBHOOK_HOST = "0.0.0.0"
 TELEGRAM_BOT_WEBHOOK_PORT = 8816

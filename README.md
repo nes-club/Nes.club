@@ -131,6 +131,36 @@ Local dev uses polling (no public webhook needed).
 docker compose up --build bot helpdeskbot
 ```
 
+## ✉️ Настройка отправки почты (SMTP)
+
+Коды входа и уведомления отправляются через SMTP.
+
+Минимальные переменные:
+- `EMAIL_BACKEND` (optional, default SMTP; for local debug use `django.core.mail.backends.console.EmailBackend`)
+- `EMAIL_HOST`
+- `EMAIL_PORT` (обычно 587)
+- `EMAIL_HOST_USER`
+- `EMAIL_HOST_PASSWORD`
+- `DEFAULT_FROM_EMAIL`
+
+Пример (Gmail):
+
+```
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your@nes.ru
+EMAIL_HOST_PASSWORD=app_password
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <your@nes.ru>
+```
+
+Важно: для Gmail нужен App Password, обычный пароль не подойдет.
+
+После изменения `.env` перезапустите:
+
+```sh
+docker compose restart club_app queue
+```
+
 ## 🧪 Dev environment on a server
 
 Same stack as local, but run it in the background and point `APP_HOST` to your dev domain.
@@ -252,8 +282,8 @@ Use `scripts/backup_postgres.sh` and run it from cron on the server.
 
 ```sh
 export POSTGRES_HOST=localhost
-export POSTGRES_DB=vas3k_club
-export POSTGRES_USER=vas3k
+export POSTGRES_DB=nes_club
+export POSTGRES_USER=nes
 export POSTGRES_PASSWORD=your_password
 export BACKUP_KEEP_DAYS=14
 ./scripts/backup_postgres.sh /var/backups/nes_club
@@ -262,7 +292,7 @@ export BACKUP_KEEP_DAYS=14
 Example cron entry (daily at 03:30):
 
 ```cron
-30 3 * * * cd /srv/nes.club && /usr/bin/env POSTGRES_HOST=localhost POSTGRES_DB=vas3k_club POSTGRES_USER=vas3k POSTGRES_PASSWORD=your_password BACKUP_KEEP_DAYS=14 ./scripts/backup_postgres.sh /var/backups/nes_club
+30 3 * * * cd /srv/nes.club && /usr/bin/env POSTGRES_HOST=localhost POSTGRES_DB=nes_club POSTGRES_USER=nes POSTGRES_PASSWORD=your_password BACKUP_KEEP_DAYS=14 ./scripts/backup_postgres.sh /var/backups/nes_club
 ```
 
 ## 🧑‍💻 Advanced setup for devs
@@ -300,7 +330,7 @@ How it works:
 
 Prerequisites on the server:
 - Docker and Docker Compose installed
-- Project directory (default): `/home/vas3k/vas3k.club/`
+- Project directory (default): `/srv/nes.club/`
 - SSH access with a deploy key (no password)
 
 Required GitHub Secrets (Settings → Secrets and variables → Actions):
@@ -368,83 +398,14 @@ Three huge requests for everyone:
 
 - Please give kudos the original authors. "Works on vas3k.club engine" in the footer of your site will be enough.
 - Please share new features you implement with us, so other folks can also benefit from them, and your own codebase minimally diverges from the original one (so you can sync updates and security fixes) . Use our [feature-flags](club/features.py).
-- Do not use our issues and other official channels as a support desk. Use [chats](https://t.me/joinchat/T5DDOpAVcZwzODg0).
 
 > ♥️ [Feature-flags](club/features.py) are great. Use them to tweak your fork. Create new flags to upstream your new features or disable existing ones.
 
-## 🙋‍♂️ How to report a bug?
+## 🙋‍♂️ Support and contributions
 
-- 🆕Open [a new issue](https://github.com/vas3k/vas3k.club/issues/new). 
-- 🔦 Please, **use a search**, to check, if there is already existed issue!
-- Explain your idea or proposal in all the details: 
-    - Make sure you clearly describe "observed" and "expected" behaviour. It will dramatically save time for our contributors and maintainers. 
-    - **For minor fixes** please just open a PR.
-    
-## 💎 Now to propose a new feature?
-
-- Go to our [Discussions](https://github.com/vas3k/vas3k.club/discussions)
-- Check to see if someone else has already come up with the idea before
-- Create a new discussion
-- 🖼 If it's **UI/UX** related: attach a screenshot or wireframe
-
-## 😍 Contributions
-
-Contributions are welcome.  
-
-The main point of interaction is the [Issues page](https://github.com/vas3k/vas3k.club/issues).
-
-Here's our contribution guidelines — [CONTRIBUTING.md](CONTRIBUTING.md).
-
-We also run the public [Github Project Board](https://github.com/vas3k/vas3k.club/projects/3) to track progress and develop roadmaps.
-
-> The official development language at the moment is Russian, because 100% of our users speak it. We don't want to introduce unnecessary barriers for them. But we are used to writing commits and comments in English and we won't mind communicating with you in it.
-
-### 😎 I want to write some code
-
-- Open our [Issues page](https://github.com/vas3k/vas3k.club/issues) to see the most important tickets at top. 
-- Pick one issue you like and **leave a comment** inside that you're getting it.
-
-**For big changes** open an issues first or (if it's already opened) leave a comment with brief explanation what and why you're going to change. Many tickets hang open not because they cannot be done, but because they cause many logical contradictions that you may not know. It's better to clarify them in comments before sending a PR.
-
-### 🚦Pay attention to issue labels!
-
-#### 🟩 Ready to implement
-
-- **good first issue** — good tickets **for first-timers**. Usually these are simple and not critical things that allow you to quickly feel the code and start contributing to it.
-- **bug** — if **something is not working**, it needs to be fixed, obviously.
-- **critical** — the **first priority** tickets.
-- **improvement** — accepted improvements for an existing module. Like adding a sort parameter to the feed. If improvement requires UI, **be sure to provide a sketch before you start.**
-
-#### 🟨 Discussion is needed
-
-- **new feature** —  completely new features. Usually they're too hard for newbies, leave them **for experienced contributors.**
-- **idea** — **discussion is needed**. Those tickets look adequate, but waiting for real proposals how they will be done. Don't implement them right away.
-
-#### 🟥 Questionable
-
-- [¯\\_(ツ)\_/¯](https://github.com/vas3k/vas3k.club/labels/%C2%AF%5C_%28%E3%83%84%29_%2F%C2%AF) - special label for **questionable issues**. (should be closed in 60 days of inactivity)
-- **[no label]** — ticket is new, unclear or still not reviewed. Feel free to comment it but **wait for our maintainers' decision** before starting to implement it.
-
-
-## 🔐 Security and vulnerabilities
-
-If you think you've found a critical vulnerability that should not be exposed to the public yet, you can always email me directly on Telegram [@vas3k](https://t.me/vas3k) or by email: [me@vas3k.ru](mailto:me@vas3k.ru).
-
-Please do not test vulnerabilities in public. If you start spamming the website with "test-test-test" posts or comments, our moderators will ban you even if you had good intentions.
-
-
-## 👍 Our top contributors
-
-Take some time to press F and give some respects to our [best contributors](https://github.com/vas3k/vas3k.club/graphs/contributors), who spent their own time to make the club better.
-
-- [@vas3k](https://github.com/vas3k)
-- [@dimabory](https://github.com/dimabory)
-- [@devcooch](https://github.com/devcooch)
-- [@nlopin](https://github.com/nlopin)
-- [@fr33mang](https://github.com/fr33mang)
-- [@Vostenzuk](https://github.com/Vostenzuk)
-- [@nikolay-govorov](https://github.com/nikolay-govorov)
-- [@FMajesty](https://github.com/FMajesty)
+- Для этой копии используйте внутренний трекер задач вашей команды.
+- Вопросы по безопасности и доступам: atishin@nes.ru.
+- Правила и ценности описаны в разделе `/docs/` внутри этого проекта.
 
 
 ## 👩‍💼 License 

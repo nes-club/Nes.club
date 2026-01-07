@@ -2,6 +2,7 @@ FROM ubuntu:24.04
 ENV MODE dev
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV BROWSERSLIST_IGNORE_OLD_DATA=1
 
 RUN set -eux; \
     sed -i 's|http://ports.ubuntu.com|https://ports.ubuntu.com|g' /etc/apt/sources.list; \

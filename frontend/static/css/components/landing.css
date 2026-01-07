@@ -94,6 +94,17 @@
     line-height: 1.2em;
 }
 
+    .landing-title h1 {
+        font-size: 1em;
+        line-height: 1.15em;
+        margin: 0 0 12px;
+        letter-spacing: 0.01em;
+    }
+
+    .landing-title p {
+        margin: 0 0 18px;
+    }
+
     @media only screen and (max-width : 570px) {
         .landing-title {
             font-size: 5vw;
