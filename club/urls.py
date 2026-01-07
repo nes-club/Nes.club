@@ -88,6 +88,8 @@ urlpatterns = [
     path("auth/openid/revoke", openid_revoke_token, name="openid_revoke_token"),
 
     path("monies/stripe/webhook_tickets/", stripe_ticket_sale_webhook, name="stripe_tickets_webhook"),
+    re_path(r"^monies/(?!stripe/webhook_tickets/).*", RedirectView.as_view(url="/join/", permanent=False)),
+    re_path(r"^payments/.*", RedirectView.as_view(url="/join/", permanent=False)),
 
     path("user/<slug:user_slug>/", profile, name="profile"),
     path("user/<slug:user_slug>.json", api_profile, name="api_profile"),

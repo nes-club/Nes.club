@@ -73,13 +73,29 @@ docker compose exec club_app python3 manage.py createsuperuser
 
 ## 🤖 Telegram bots (optional)
 
+There are two optional bots:
+
+1. **Main club bot** (`bot/`)
+   - Sends auth/login links and notifications
+   - Handles comment replies, upvotes, and moderation callbacks
+   - Supports AI replies when mentioned (if enabled)
+2. **Helpdesk bot** (`helpdeskbot/`)
+   - Collects questions from members
+   - Posts them to a helpdesk channel
+   - Tracks replies in the linked discussion
+
 Local dev uses polling (no public webhook needed).
 
-1. Set env vars (minimum):
+1. Set env vars (minimum for main bot):
    - `TELEGRAM_TOKEN`
    - `TELEGRAM_ADMIN_CHAT_ID`
-2. Uncomment `bot` and/or `helpdeskbot` in `docker-compose.yml`.
-3. Start the bot containers:
+   - `TELEGRAM_BOT_URL` (public bot link)
+2. For helpdesk bot (optional):
+   - `TELEGRAM_HELP_DESK_BOT_TOKEN`
+   - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID`
+   - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID`
+3. Uncomment `bot` and/or `helpdeskbot` in `docker-compose.yml`.
+4. Start the bot containers:
 
 ```sh
 docker compose up --build bot helpdeskbot
@@ -241,6 +257,77 @@ Then, [Github Actions](.github/workflows/deploy.yml) have to take all the dirty 
 Explore the whole [.github](.github) folder for more insights.
 
 We're open for proposals on how to improve our deployments without overcomplicating it with modern devops bullshit.
+
+### GitHub Actions deployment (detailed setup)
+
+Workflow: `.github/workflows/deploy.yml`
+
+How it works:
+1. Triggers on every `push` to `master`.
+2. Builds and pushes Docker images to GHCR.
+3. Connects to your server via SSH and runs `docker compose -f docker-compose.production.yml --env-file=.env up -d`.
+
+Prerequisites on the server:
+- Docker and Docker Compose installed
+- Project directory (default): `/home/vas3k/vas3k.club/`
+- SSH access with a deploy key (no password)
+
+Required GitHub Secrets (Settings → Secrets and variables → Actions):
+
+Minimal (required for deploy):
+- `TOKEN` (PAT or GitHub token with `write:packages` for GHCR)
+- `PRODUCTION_SSH_HOST`
+- `PRODUCTION_SSH_USERNAME`
+- `PRODUCTION_SSH_KEY` (private key)
+- `SECRET_KEY`
+- `APP_HOST`
+- `POSTGRES_PASSWORD`
+- `EMAIL_HOST`
+- `EMAIL_HOST_USER`
+- `EMAIL_HOST_PASSWORD`
+
+Media / images (optional):
+- `MEDIA_UPLOAD_URL`
+- `MEDIA_UPLOAD_CODE`
+
+Monitoring (optional):
+- `SENTRY_DSN`
+
+Telegram bots (optional):
+- `TELEGRAM_TOKEN`
+- `TELEGRAM_BOT_URL`
+- `TELEGRAM_ADMIN_CHAT_ID`
+- `TELEGRAM_CLUB_CHANNEL_URL`
+- `TELEGRAM_CLUB_CHANNEL_ID`
+- `TELEGRAM_CLUB_CHAT_URL`
+- `TELEGRAM_CLUB_CHAT_ID`
+- `TELEGRAM_ONLINE_CHANNEL_URL`
+- `TELEGRAM_ONLINE_CHANNEL_ID`
+- `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID`
+- `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID`
+- `TELEGRAM_HELP_DESK_BOT_TOKEN`
+
+Payments (optional, if enabled):
+- `STRIPE_ACTIVE`
+- `STRIPE_API_KEY`
+- `STRIPE_TICKETS_API_KEY`
+- `STRIPE_PUBLIC_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_TICKETS_WEBHOOK_SECRET`
+
+Patreon (optional, if enabled):
+- `PATREON_CLIENT_ID`
+- `PATREON_CLIENT_SECRET`
+
+Auth / integrations (optional):
+- `JWT_PRIVATE_KEY`
+- `WEBHOOK_SECRETS`
+- `OPENAI_API_KEY`
+
+Notes and customization:
+- If your default branch is not `master`, update `on.push.branches` in the workflow.
+- If your server path is different, update the `scp`/`ssh` paths in `deploy.yml`.
+- The workflow writes all `secret_*` variables to `.env` on the server.
 
 ## 🛤 Forking and tweaking
 
