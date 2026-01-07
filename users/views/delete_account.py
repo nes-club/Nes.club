@@ -10,7 +10,6 @@ from notifications.telegram.common import send_telegram_message, ADMIN_CHAT
 from club.exceptions import BadRequest, AccessDenied
 from gdpr.models import DataRequests
 from notifications.email.users import send_delete_account_request_email, send_delete_account_confirm_email
-from payments.helpers import cancel_all_stripe_subscriptions
 from rooms.helpers import ban_user_in_all_chats
 
 
@@ -51,9 +50,6 @@ def confirm_delete_account(request):
 
     # verify code (raises an exception)
     Code.check_code(recipient=request.me.email, code=code)
-
-    # cancel payments
-    cancel_all_stripe_subscriptions(request.me.stripe_id)
 
     # mark user for deletion
     request.me.deleted_at = datetime.utcnow()

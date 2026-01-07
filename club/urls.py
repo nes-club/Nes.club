@@ -42,7 +42,6 @@ from posts.views.posts import show_post, edit_post, compose, compose_type, \
     delete_post, unpublish_post, clear_post
 from bookmarks.views import bookmarks
 from search.views import search
-from tickets.views import stripe_ticket_sale_webhook
 
 from users.api import api_profile, api_profile_by_telegram_id, api_profile_tags
 from users.views.delete_account import request_delete_account, confirm_delete_account
@@ -84,8 +83,7 @@ urlpatterns = [
     path("auth/openid/token", openid_issue_token, name="openid_issue_token"),
     path("auth/openid/revoke", openid_revoke_token, name="openid_revoke_token"),
 
-    path("monies/stripe/webhook_tickets/", stripe_ticket_sale_webhook, name="stripe_tickets_webhook"),
-    re_path(r"^monies/(?!stripe/webhook_tickets/).*", RedirectView.as_view(url="/join/", permanent=False)),
+    re_path(r"^monies/.*", RedirectView.as_view(url="/join/", permanent=False)),
     re_path(r"^payments/.*", RedirectView.as_view(url="/join/", permanent=False)),
 
     path("user/<slug:user_slug>/", profile, name="profile"),

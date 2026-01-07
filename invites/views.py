@@ -9,10 +9,8 @@ from authn.helpers import set_session_cookie
 from authn.models.session import Session
 from club.exceptions import AccessDenied
 from invites.models import Invite
-from payments.models import Payment
 from users.models.user import User
 from users.services.access import grant_long_membership
-from utils.strings import random_string
 
 
 @require_auth
@@ -119,12 +117,6 @@ def godmode_generate_invite_code(request):
 
     Invite.objects.create(
         user=request.me,
-        payment=Payment.create(
-            reference="god-" + random_string(length=16),
-            user=request.me,
-            product={"code": "invite", "amount": 0},
-            status=Payment.STATUS_SUCCESS,
-        )
     )
 
     return redirect("invites")
@@ -137,12 +129,6 @@ def create_invite(request):
 
     Invite.objects.create(
         user=request.me,
-        payment=Payment.create(
-            reference="invite-" + random_string(length=16),
-            user=request.me,
-            product={"code": "invite", "amount": 0},
-            status=Payment.STATUS_SUCCESS,
-        )
     )
 
     return redirect("invites")

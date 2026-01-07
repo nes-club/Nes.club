@@ -16,16 +16,6 @@ def send_registration_email(user: User):
     )
 
 
-def send_renewal_email(user: User):
-    renewal_template = loader.get_template("emails/renewal.html")
-    send_transactional_email(
-        recipient=user.email,
-        subject=f"Ваша подписка стала еще длинее!",
-        html=renewal_template.render({"user": user}),
-        tags=["renewal"]
-    )
-
-
 def send_welcome_drink(user: User):
     welcome_drink_template = loader.get_template("emails/welcome.html")
     send_transactional_email(

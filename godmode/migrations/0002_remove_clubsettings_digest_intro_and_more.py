@@ -17,17 +17,17 @@ def create_initial_settings(apps, schema_editor):
 
     ClubSettings.objects.update_or_create(
         code='app_name',
-        defaults={'value': "Вастрик.Клуб"}
+        defaults={'value': "Сообщество выпускников РЭШ"}
     )
 
     ClubSettings.objects.update_or_create(
         code='app_title',
-        defaults={'value': "Вастрик.Клуб 🤘✖️👩‍💻"}
+        defaults={'value': "Сообщество выпускников РЭШ"}
     )
 
     ClubSettings.objects.update_or_create(
         code='app_description',
-        defaults={'value': "Всё интересное происходит за закрытыми дверями"}
+        defaults={'value': "Объединяем выпускников, сотрудников и друзей РЭШ"}
     )
 
 

@@ -16,7 +16,6 @@ from godmode.actions.user_delete import get_delete_action, post_delete_action
 from godmode.actions.user_hat import get_hat_action, post_hat_action
 from godmode.actions.user_ping import get_ping_action, post_ping_action
 from godmode.actions.user_profile import view_profile_action
-from godmode.actions.user_prolong import get_prolong_action, post_prolong_action
 from godmode.actions.user_role import get_role_action, post_role_action
 from godmode.actions.user_unmoderate import get_unmoderate_action, post_unmoderate_action
 from godmode.models import ClubSettings
@@ -34,7 +33,6 @@ from posts.models.linked import LinkedPost
 from posts.models.post import Post
 from rooms.models import Room
 from tags.models import Tag, UserTag
-from tickets.models import Ticket, TicketSale
 from users.models.achievements import Achievement, UserAchievement
 from users.models.friends import Friend
 from users.models.geo import Geo
@@ -43,7 +41,7 @@ from users.models.notes import UserNote
 from users.models.user import User
 
 ADMIN = ClubAdmin(
-    title="Админка Клуба",
+    title="Админка сообщества",
     groups=[
         ClubAdminGroup(
             title="Основное",
@@ -51,7 +49,7 @@ ADMIN = ClubAdmin(
             models=[
                 ClubAdminModel(
                     model=ClubSettings,
-                    title="Настройки Клуба",
+                    title="Настройки сообщества",
                     icon="⚙️",
                     name="settings",
                     list_roles={User.ROLE_GOD},
@@ -66,7 +64,7 @@ ADMIN = ClubAdmin(
                     name="moderation",
                 ),
                 ClubAdminPage(
-                    title="Пригласить в Клуб",
+                    title="Пригласить в сообщество",
                     icon="🎁",
                     name="invite",
                     view=invite_user_by_email,
@@ -155,11 +153,6 @@ ADMIN = ClubAdmin(
                             title="🎓 Дать шапку",
                             get=get_hat_action,
                             post=post_hat_action,
-                        ),
-                        "prolong": ClubAdminAction(
-                            title="⏰ Продлить членство",
-                            get=get_prolong_action,
-                            post=post_prolong_action,
                         ),
                         "roles": ClubAdminAction(
                             title="🛂 Выдать роль",
@@ -486,31 +479,6 @@ ADMIN = ClubAdmin(
                     list_roles={User.ROLE_MODERATOR, User.ROLE_GOD, User.ROLE_CURATOR},
                     icon="🌍",
                     name="network_groups",
-                ),
-            ],
-        ),
-        ClubAdminGroup(
-            title="Билеты",
-            icon="🎟️",
-            models=[
-                ClubAdminModel(
-                    model=Ticket,
-                    title="Билеты",
-                    icon="🎫",
-                    name="tickets",
-                    list_fields=[
-                        "name",
-                        "code",
-                        "achievement",
-                        "tickets_sold",
-                        "limit_quantity",
-                    ]
-                ),
-                ClubAdminModel(
-                    model=TicketSale,
-                    title="Проданные билеты",
-                    icon="📈",
-                    name="ticket_sales",
                 ),
             ],
         ),

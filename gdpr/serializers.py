@@ -93,7 +93,6 @@ def user_to_json(user: User) -> dict:
         "membership_started_at": user.membership_started_at.isoformat() if user.membership_started_at else None,
         "membership_expires_at": user.membership_expires_at.isoformat() if user.membership_expires_at else None,
         "membership_platform_type": user.membership_platform_type,
-        "patreon_id": user.patreon_id,
         "email_digest_type": user.email_digest_type,
         "telegram_id": user.telegram_id,
         "telegram_data": user.telegram_data,

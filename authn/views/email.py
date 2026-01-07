@@ -9,6 +9,7 @@ from authn.models.session import Session, Code
 from notifications.email.users import send_auth_email
 from notifications.telegram.users import notify_user_auth
 from users.models.user import User
+from users.services.access import grant_long_membership
 
 
 def email_login(request):
@@ -54,6 +55,7 @@ def email_login_code(request):
 
     user = Code.check_code(recipient=email, code=code)
     session = Session.create_for_user(user)
+    grant_long_membership(user)
 
     if not user.is_email_verified:
         # save 1 click and verify email

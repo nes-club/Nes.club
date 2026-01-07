@@ -5,7 +5,6 @@ from django_q.tasks import async_task
 from common.data.ban import PERMANENT_BAN_DAYS, PROGRESSIVE_BAN_DAYS, BanReason
 from notifications.email.users import send_banned_email
 from notifications.telegram.ban import notify_admins_on_ban, notify_user_ban
-from payments.helpers import cancel_all_stripe_subscriptions
 from rooms.helpers import ban_user_in_all_chats
 from users.models.user import User
 
@@ -19,7 +18,6 @@ def temporary_ban_user(user: User, reason: BanReason):
 
 
 def permanently_ban_user(user: User, reason: BanReason):
-    cancel_all_stripe_subscriptions(user.stripe_id)
     async_task(
         ban_user_in_all_chats,
         user=user,
@@ -54,9 +52,6 @@ def custom_ban_user(user: User, days: int, reason: BanReason) -> bool:
     notify_admins_on_ban(user, days=days, reason=reason_text)
 
     # cancel subscriptions for long bans
-    if days > 60 and user.is_banned_until > user.membership_expires_at:
-        cancel_all_stripe_subscriptions(user.stripe_id)
-
     return True
 
 
@@ -78,4 +73,3 @@ def calculate_progressive_ban_days(user: User, min_days: int) -> int:
 
     # or just return the biggest one
     return PROGRESSIVE_BAN_DAYS[-1]
-

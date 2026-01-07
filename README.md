@@ -28,7 +28,8 @@ Feel free to propose "state of the art" refactorings for UI or backend code if y
 
 1. Install Docker Desktop.
 2. Open the repository folder in your terminal.
-3. Build and run all dev services:
+3. Create `.env` in the repo root (it is already in `.gitignore`).
+4. Build and run all dev services:
 
     ```sh
     docker compose up --build
@@ -57,6 +58,41 @@ docker compose down -v
 docker compose up --build
 ```
 
+### Minimal local `.env`
+
+```dotenv
+APP_HOST=http://127.0.0.1:8000
+SECRET_KEY=
+DEBUG=true
+
+POSTGRES_DB=nes_club
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_HOST=postgres
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
+
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+EMAIL_HOST=
+EMAIL_PORT=587
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <atishin@nes.ru>
+
+TELEGRAM_TOKEN=
+TELEGRAM_BOT_URL=
+TELEGRAM_ADMIN_CHAT_ID=
+TELEGRAM_CLUB_CHANNEL_URL=
+TELEGRAM_CLUB_CHAT_URL=
+TELEGRAM_ONLINE_CHANNEL_URL=
+
+TELEGRAM_HELP_DESK_BOT_TOKEN=
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID=
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
+```
+
 ## 🔗 Local links
 
 - Home: http://127.0.0.1:8000/
@@ -70,6 +106,16 @@ Create a Django superuser (optional):
 ```sh
 docker compose exec club_app python3 manage.py createsuperuser
 ```
+
+### ✅ Local/Dev checklist
+
+1. `.env` создан в корне репозитория (в `.gitignore`)
+2. `docker compose up --build` завершился без ошибок
+3. `http://127.0.0.1:8000/` открывается
+4. `/join/` ведет на форму без оплаты
+5. `EMAIL_BACKEND` настроен (console для локального теста или SMTP для реальной почты)
+6. Telegram URL‑ы заданы полными ссылками (`https://t.me/...`) если боты нужны
+7. Боты запущены только если заданы токены
 
 ## 🧩 Docker compose profiles
 
@@ -119,16 +165,21 @@ Local dev uses polling (no public webhook needed).
 1. Set env vars (minimum for main bot):
    - `TELEGRAM_TOKEN`
    - `TELEGRAM_ADMIN_CHAT_ID`
-   - `TELEGRAM_BOT_URL` (public bot link)
+   - `TELEGRAM_BOT_URL` (public bot link, full URL like `https://t.me/your_bot`)
 2. For helpdesk bot (optional):
    - `TELEGRAM_HELP_DESK_BOT_TOKEN`
    - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID`
    - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID`
-3. Uncomment `bot` and/or `helpdeskbot` in `docker-compose.yml`.
-4. Start the bot containers:
+3. Start the bot containers:
 
 ```sh
 docker compose up --build bot helpdeskbot
+```
+
+If you see “relation rooms does not exist” on first boot, restart helpdeskbot after migrations finish:
+
+```sh
+docker compose restart helpdeskbot
 ```
 
 ## ✉️ Настройка отправки почты (SMTP)
@@ -146,14 +197,15 @@ docker compose up --build bot helpdeskbot
 Пример (Gmail):
 
 ```
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=your@nes.ru
-EMAIL_HOST_PASSWORD=app_password
+EMAIL_HOST_PASSWORD=app_password_without_spaces
 DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <your@nes.ru>
 ```
 
-Важно: для Gmail нужен App Password, обычный пароль не подойдет.
+Важно: для Gmail нужен App Password, обычный пароль не подойдет. `DEFAULT_FROM_EMAIL` лучше ставить тем же адресом, что `EMAIL_HOST_USER`.
 
 После изменения `.env` перезапустите:
 
@@ -248,6 +300,30 @@ docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
    - Postgres daily dump (off-host)
    - `gdpr/downloads` volume backup if you use it
    - Store backups encrypted and test restore monthly
+
+### ✅ Deployment checklist
+
+1. DNS
+   - `APP_HOST` соответствует домену (например, `https://test.ru`)
+   - A/AAAA записи указывают на сервер
+2. `.env` на сервере
+   - Заполнены `POSTGRES_HOST/DB/USER/PASSWORD`
+   - Заполнены SMTP переменные (`EMAIL_*`)
+   - `SECRET_KEY` установлен
+3. Docker images
+   - Указан `CLUB_IMAGE` или доступна сборка из репозитория
+4. Migrations
+   - После обновления кода: `docker compose -f docker-compose.production.yml up -d`
+5. Webhooks (если используются)
+   - `/telegram/webhook/` доступен по `APP_HOST`
+6. Smoke check
+   - `GET /` возвращает 200
+   - Авторизация через email работает
+7. GitHub Actions
+   - `TOKEN` с правами `write:packages`
+   - `PRODUCTION_SSH_HOST`, `PRODUCTION_SSH_USERNAME`, `PRODUCTION_SSH_KEY`
+   - Секреты приложения: `SECRET_KEY`, `APP_HOST`, `POSTGRES_PASSWORD`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
+   - Опционально: `MEDIA_UPLOAD_URL`, `MEDIA_UPLOAD_CODE`, `SENTRY_DSN`, `TELEGRAM_*`
 
 ### 📦 Nginx пример
 
@@ -367,18 +443,6 @@ Telegram bots (optional):
 - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID`
 - `TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID`
 - `TELEGRAM_HELP_DESK_BOT_TOKEN`
-
-Payments (optional, if enabled):
-- `STRIPE_ACTIVE`
-- `STRIPE_API_KEY`
-- `STRIPE_TICKETS_API_KEY`
-- `STRIPE_PUBLIC_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_TICKETS_WEBHOOK_SECRET`
-
-Patreon (optional, if enabled):
-- `PATREON_CLIENT_ID`
-- `PATREON_CLIENT_SECRET`
 
 Auth / integrations (optional):
 - `JWT_PRIVATE_KEY`

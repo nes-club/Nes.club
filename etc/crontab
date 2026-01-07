@@ -4,7 +4,6 @@
 0 13 * * 2 root cd /app && python3 manage.py notify_expired_intros --production true  >/proc/1/fd/1 2>/proc/1/fd/2
 30 */4 * * 1-6 root cd /app && python3 manage.py send_best_comments  >/proc/1/fd/1 2>/proc/1/fd/2
 0 10 * * 1 root cd /app && python3 manage.py send_weekly_digest --production true  >/proc/1/fd/1 2>/proc/1/fd/2
-0 12 * * * root cd /app && python3 manage.py send_subscription_expired --production true  >/proc/1/fd/1 2>/proc/1/fd/2
 0 2 * * 6 root cd /app && python3 manage.py cleanup_post_views  >/proc/1/fd/1 2>/proc/1/fd/2
 0 2 * * 7 root cd /app && python3 manage.py rebuild_search_index  >/proc/1/fd/1 2>/proc/1/fd/2
 0 0 * * 7 root cd /app && python3 manage.py count_chat_members  >/proc/1/fd/1 2>/proc/1/fd/2

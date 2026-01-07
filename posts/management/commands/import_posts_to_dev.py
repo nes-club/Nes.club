@@ -178,7 +178,7 @@ def create_user(author):
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
         membership_started_at=datetime.utcnow(),
-        membership_expires_at=datetime.utcnow() + timedelta(days=365 * 100),
+        membership_expires_at=datetime.utcnow() + timedelta(days=365 * 1000),
         is_email_verified=True,
         moderation_status=User.MODERATION_STATUS_APPROVED,
         roles=[],

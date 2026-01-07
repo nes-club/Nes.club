@@ -8,5 +8,4 @@
 #   False — everyone can view the feed, it becomes the main page
 PRIVATE_FEED = True
 
-# Patreon auth is disabled for NES alumni community.
 PATREON_AUTH_ENABLED = False

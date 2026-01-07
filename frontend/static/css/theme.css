@@ -5,14 +5,17 @@
     --block-border-radius: 15px;
     --button-border-radius: 15px;
 
-    --button-color: #FFF;
-    --button-bg-color: #333;
-    --button-border: solid 2px #333;
-    --button-hover-color: #333;
-    --button-hover-bg-color: #FFF;
-    --button-hover-border: solid 2px #333;
+    --nes-blue: #1C3C8C;
+    --nes-red: #D9252A;
 
-    --badge-color: rgba(255, 196, 85, 0.91);
+    --button-color: #FFF;
+    --button-bg-color: var(--nes-blue);
+    --button-border: solid 2px var(--nes-blue);
+    --button-hover-color: #FFF;
+    --button-hover-bg-color: var(--nes-red);
+    --button-hover-border: solid 2px var(--nes-red);
+
+    --badge-color: rgba(217, 37, 42, 0.9);
 }
 
 html, html[theme="light"] {
@@ -28,17 +31,17 @@ html, html[theme="light"] {
     --block-shadow: 10px 15px 40px rgba(83, 91, 110, 0.11);
     --block-border: none;
 
-    --link-color: #333;
-    --link-hover-color: #000;
-    --visited-link-color: #333;
+    --link-color: var(--nes-blue);
+    --link-hover-color: var(--nes-red);
+    --visited-link-color: #162f72;
 
     --button-color: #FFF;
-    --button-bg-color: #333;
+    --button-bg-color: var(--nes-blue);
     --button-disabled-bg-color: #DDD;
-    --button-border: solid 2px #333;
-    --button-hover-color: #333;
-    --button-hover-bg-color: #FFF;
-    --button-hover-border: solid 2px #333;
+    --button-border: solid 2px var(--nes-blue);
+    --button-hover-color: #FFF;
+    --button-hover-bg-color: var(--nes-red);
+    --button-hover-border: solid 2px var(--nes-red);
 
     --select-color: #333;
     --select-bg-color: #FFF;
@@ -65,17 +68,17 @@ html[theme="dark"] {
     --block-shadow: 0px 0px 0px #000;
     --block-border: solid 1px #FCFDFF;
 
-    --link-color: #DDD;
-    --link-hover-color: #FFF;
-    --visited-link-color: #737373;
+    --link-color: #8ea3ff;
+    --link-hover-color: #ff6b6f;
+    --visited-link-color: #8a96c7;
 
-    --button-color: #333;
-    --button-bg-color: #FFF;
+    --button-color: #FFF;
+    --button-bg-color: var(--nes-blue);
     --button-disabled-bg-color: #8A8A8A;
-    --button-border: solid 2px #FFF;
+    --button-border: solid 2px var(--nes-blue);
     --button-hover-color: #FFF;
-    --button-hover-bg-color: #333;
-    --button-hover-border: solid 2px #FFF;
+    --button-hover-bg-color: var(--nes-red);
+    --button-hover-border: solid 2px var(--nes-red);
 
     --select-color: #333;
     --select-bg-color: #FFF;
@@ -103,16 +106,16 @@ html[theme="dark"] {
         --block-shadow: 0px 0px 0px #000;
         --block-border: solid 1px #FCFDFF;
 
-        --link-color: #DDD;
-        --link-hover-color: #FFF;
-        --visited-link-color: #737373;
+        --link-color: #8ea3ff;
+        --link-hover-color: #ff6b6f;
+        --visited-link-color: #8a96c7;
 
-        --button-color: #333;
-        --button-bg-color: #FFF;
-        --button-border: solid 2px #FFF;
+        --button-color: #FFF;
+        --button-bg-color: var(--nes-blue);
+        --button-border: solid 2px var(--nes-blue);
         --button-hover-color: #FFF;
-        --button-hover-bg-color: #333;
-        --button-hover-border: solid 2px #FFF;
+        --button-hover-bg-color: var(--nes-red);
+        --button-hover-border: solid 2px var(--nes-red);
     }
 }
 

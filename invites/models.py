@@ -16,7 +16,6 @@ class Invite(models.Model):
 
     code = models.CharField(max_length=32, unique=True)
     user = models.ForeignKey("users.User",  related_name="invites", on_delete=models.CASCADE)
-    payment = models.ForeignKey("payments.Payment", related_name="invites", on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     used_at = models.DateTimeField(null=True)

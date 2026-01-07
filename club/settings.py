@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     "bookmarks.apps.BookmarksConfig",
     "comments.apps.CommentsConfig",
     "landing.apps.LandingConfig",
-    "payments.apps.PaymentsConfig",
     "posts.apps.PostsConfig",
     "users.apps.UsersConfig",
     "notifications.apps.NotificationsConfig",
@@ -57,7 +56,6 @@ INSTALLED_APPS = [
     "misc.apps.MiscConfig",
     "godmode.apps.GodmodeConfig",
     "invites.apps.InvitesConfig",
-    "tickets.apps.TicketsConfig",
     "clickers.apps.ClickersConfig",
     "ai.apps.AiConfig",
     "simple_history",
@@ -241,14 +239,6 @@ GDPR_DELETE_TIMEDELTA = timedelta(hours=2 * 24)
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
-PATREON_AUTH_URL = "https://www.patreon.com/oauth2/authorize"
-PATREON_TOKEN_URL = "https://www.patreon.com/api/oauth2/token"
-PATREON_USER_URL = "https://www.patreon.com/api/oauth2/v2/identity"
-PATREON_CLIENT_ID = os.getenv("PATREON_CLIENT_ID")
-PATREON_CLIENT_SECRET = os.getenv("PATREON_CLIENT_SECRET")
-PATREON_REDIRECT_URL = f"{APP_HOST}/auth/patreon_callback/"
-PATREON_SCOPE = "identity identity[email]"
-
 JWT_PRIVATE_KEY = (os.getenv("JWT_PRIVATE_KEY") or "").replace("\\n", "\n")
 JWT_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvEDEGKL0b+okI6QBBMiu
@@ -296,17 +286,9 @@ TELEGRAM_CLUB_CHAT_URL = os.getenv("TELEGRAM_CLUB_CHAT_URL")
 TELEGRAM_CLUB_CHAT_ID = os.getenv("TELEGRAM_CLUB_CHAT_ID")
 TELEGRAM_ONLINE_CHANNEL_URL = os.getenv("TELEGRAM_ONLINE_CHANNEL_URL")
 TELEGRAM_ONLINE_CHANNEL_ID = os.getenv("TELEGRAM_ONLINE_CHANNEL_ID")
-TELEGRAM_PAY_BOT_URL = os.getenv("TELEGRAM_PAY_BOT_URL") or ""
 TELEGRAM_BOT_WEBHOOK_URL = f"{APP_HOST}/telegram/webhook/"
 TELEGRAM_BOT_WEBHOOK_HOST = "0.0.0.0"
 TELEGRAM_BOT_WEBHOOK_PORT = 8816
-
-STRIPE_API_KEY = os.getenv("STRIPE_API_KEY") or ""
-STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY") or ""
-STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET") or ""
-STRIPE_CANCEL_URL = APP_HOST + "/join/"
-STRIPE_SUCCESS_URL = APP_HOST + "/monies/done/?reference={CHECKOUT_SESSION_ID}"
-STRIPE_CUSTOMER_PORTAL_URL = "https://billing.stripe.com/p/login/6oEcMM7Sj7YfaWIbII"
 
 WEBHOOK_SECRETS = set(os.getenv("WEBHOOK_SECRETS", "").split(","))
 
@@ -357,12 +339,12 @@ CREWS = {
         "reasons": [
             {"code": "achievement", "text": "Выдать или получить ачивку"},
             {"code": "activity", "text": "Хочу организовать активность"},
-            {"code": "idea", "text": "У меня есть идея для Клуба!"},
+            {"code": "idea", "text": "У меня есть идея для сообщества!"},
             {"code": "other", "text": "Я только спросить"},
         ]
     },
     "events": {
-        "title": "Написать оргам Вастрик Ивентов",
+        "title": "Написать оргам мероприятий сообщества",
         "telegram_chat_id": -1003410014342,
     }
 }

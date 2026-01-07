@@ -7,14 +7,13 @@ from django.shortcuts import render
 from authn.models.session import Session
 from notifications.email.users import send_delete_account_confirm_email
 from notifications.telegram.common import send_telegram_message, ADMIN_CHAT
-from payments.helpers import cancel_all_stripe_subscriptions
 from rooms.helpers import ban_user_in_all_chats
 from users.models.user import User
 
 
 class UserDeleteForm(forms.Form):
     delete_account = forms.BooleanField(
-        label="Удалить аккаунт и обнулить подписку",
+        label="Удалить аккаунт",
         initial=True,
         required=True
     )
@@ -51,9 +50,6 @@ def post_delete_action(request, user: User, **context):
             }
             user.save()
 
-            # cancel recurring payments
-            cancel_all_stripe_subscriptions(user.stripe_id)
-
             # mark user for deletion
             user.deleted_at = datetime.utcnow()
             user.save()
@@ -89,4 +85,3 @@ def post_delete_action(request, user: User, **context):
             "item": user,
             "form": form,
         })
-

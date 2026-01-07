@@ -2,13 +2,13 @@ from django import forms
 from django.shortcuts import render
 
 from notifications.telegram.common import send_telegram_message, ADMIN_CHAT
-from payments.helpers import gift_membership_days
+from users.services.access import gift_membership_days
 from users.models.user import User
 
 
 class UserProlongForm(forms.Form):
     add_membership_days = forms.IntegerField(
-        label="Добавить дней членства",
+        label="Добавить дней доступа",
         required=True
     )
 
@@ -38,12 +38,12 @@ def post_prolong_action(request, user: User, **context):
 
             send_telegram_message(
                 chat=ADMIN_CHAT,
-                text=f"🎁 <b>Юзеру {user.slug} добавили {data['add_membership_days']} дней членства</b>",
+                text=f"🎁 <b>Юзеру {user.slug} добавили {data['add_membership_days']} дней доступа</b>",
             )
 
         return render(request, "godmode/message.html", {
             **context,
-            "title": f"Юзеру {user.full_name} добавили {data['add_membership_days']} дней членства",
+            "title": f"Юзеру {user.full_name} добавили {data['add_membership_days']} дней доступа",
             "message": f"Заслужил 👍",
         })
     else:
@@ -52,4 +52,3 @@ def post_prolong_action(request, user: User, **context):
             "item": user,
             "form": form,
         })
-

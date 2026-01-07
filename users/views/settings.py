@@ -86,17 +86,6 @@ def edit_notifications(request, user_slug):
 
 
 @require_auth
-def edit_payments(request, user_slug):
-    if user_slug == "me" and request.me:
-        return redirect("edit_account", request.me.slug, permanent=False)
-
-    if not request.me:
-        return redirect("login")
-
-    return redirect("edit_account", request.me.slug, permanent=False)
-
-
-@require_auth
 def edit_bot(request, user_slug):
     if user_slug == "me" and request.me:
         return redirect("edit_bot", request.me.slug, permanent=False)
