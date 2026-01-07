@@ -24,28 +24,199 @@ You don't really need to understand how the magic of webpack <-> django communic
 
 Feel free to propose "state of the art" refactorings for UI or backend code if you know how to do it better. We're open for best practices from both worlds.
 
-## 🔮 Installing and running locally
+## 🔮 Installing and running locally (Docker)
 
-1. Install [Docker](https://www.docker.com/get-started)
-
-2. Clone the repo
-
-    ```sh
-    $ git clone https://github.com/vas3k/vas3k.club.git
-    $ cd vas3k.club
-    ```
-
-3. Run
+1. Install Docker Desktop.
+2. Open the repository folder in your terminal.
+3. Build and run all dev services:
 
     ```sh
-    $ docker compose up --build
+    docker compose up --build
     ```
 
-This will start the application in development mode on [http://127.0.0.1:8000/](http://127.0.0.1:8000/), as well as other necessary services: postgres database, queue with workers, redis and webpack. 
+This starts the app in dev mode on http://127.0.0.1:8000/ plus Postgres, Redis, queue workers, and webpack.
 
-The first time you start it up, you'll probably need a test account to get right in. Go to [/godmode/dev_login/](http://127.0.0.1:8000/godmode/dev_login/) and it will create an admin account for you (and log you in automatically). To create new test user hit the [/godmode/random_login/](http://127.0.0.1:8000/godmode/random_login/) endpoint.
+After the containers are up:
 
-Auto-reloading for backend and frontend is performed automatically on every code change. If everything is broken and not working (it happens), you can always rebuild the world from scratch using `docker compose up --build`.
+1. Wait for `Starting development server at http://0.0.0.0:8000/`.
+2. Open http://127.0.0.1:8000/.
+3. Quick admin session: http://127.0.0.1:8000/godmode/dev_login/
+4. Random test user: http://127.0.0.1:8000/godmode/random_login/
+
+Hot reload works for both backend and frontend. If assets look stale:
+
+```sh
+docker compose restart club_app webpack
+```
+
+If you changed templates and still see old texts, check the page source in the DB (docs pages are stored in the database).
+If you need to fully reset everything:
+
+```sh
+docker compose down -v
+docker compose up --build
+```
+
+## 🔗 Local links
+
+- Home: http://127.0.0.1:8000/
+- Join: http://127.0.0.1:8000/join/
+- Django admin: http://127.0.0.1:8000/admin/
+- Dev login (admin): http://127.0.0.1:8000/godmode/dev_login/
+- Random user: http://127.0.0.1:8000/godmode/random_login/
+
+Create a Django superuser (optional):
+
+```sh
+docker compose exec club_app python3 manage.py createsuperuser
+```
+
+## 🤖 Telegram bots (optional)
+
+Local dev uses polling (no public webhook needed).
+
+1. Set env vars (minimum):
+   - `TELEGRAM_TOKEN`
+   - `TELEGRAM_ADMIN_CHAT_ID`
+2. Uncomment `bot` and/or `helpdeskbot` in `docker-compose.yml`.
+3. Start the bot containers:
+
+```sh
+docker compose up --build bot helpdeskbot
+```
+
+## 🧪 Dev environment on a server
+
+Same stack as local, but run it in the background and point `APP_HOST` to your dev domain.
+
+1. Create a `.env` file with:
+   - `APP_HOST=https://dev.alumni.nes.ru` (or `http://<server-ip>:8000`)
+   - Optional bot vars if you need Telegram bots (see below)
+2. Run:
+
+```sh
+docker compose up --build -d
+```
+
+3. Check logs if something failed:
+
+```sh
+docker compose logs -f club_app
+```
+
+Open the site on your dev domain or `http://<server-ip>:8000/` and use the same links as in local:
+
+- Admin: `http://<server-ip>:8000/admin/`
+- Dev login: `http://<server-ip>:8000/godmode/dev_login/`
+- Random user: `http://<server-ip>:8000/godmode/random_login/`
+
+If you want HTTPS and a clean domain, put Nginx/Traefik in front of `127.0.0.1:8000` and set `APP_HOST` to the public URL.
+
+To update code in dev:
+
+```sh
+git pull
+docker compose up --build -d
+docker compose restart club_app webpack
+```
+
+To reset dev data:
+
+```sh
+docker compose down -v
+docker compose up --build -d
+```
+
+## 🏭 Production environment on a server
+
+Production is described in `docker-compose.production.yml` and expects an external Postgres.
+All domains and secrets are read from `.env` (see `.env.production.example`).
+
+1. Create `.env` with at least:
+   - `APP_HOST=https://alumni.nes.ru`
+   - `MEDIA_UPLOAD_URL=` (optional; leave empty for local media)
+   - `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+   - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`
+   - `TELEGRAM_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID` (if bots are enabled)
+2. Start production services:
+
+```sh
+docker compose -f docker-compose.production.yml up -d
+```
+
+3. Put a reverse proxy in front of the app:
+   - App listens on `127.0.0.1:8814`
+   - Bot webhooks (if enabled) should be reachable at `${APP_HOST}/telegram/webhook/`
+
+Optional services for prod:
+
+```sh
+docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
+```
+
+### ✅ Production checklist
+
+1. Nginx/Traefik
+   - Reverse proxy to `127.0.0.1:8814`
+   - Pass `Host` and `X-Forwarded-*` headers
+   - Gzip/brotli enabled
+2. SSL
+   - Get TLS certs (Let’s Encrypt or your CA)
+   - Force HTTPS redirects
+   - Update `APP_HOST=https://your-domain`
+3. Healthchecks
+   - Add an external monitor for `GET /` (200)
+   - Optional: monitor `GET /metrics` if you expose it
+4. Backups
+   - Postgres daily dump (off-host)
+   - `gdpr/downloads` volume backup if you use it
+   - Store backups encrypted and test restore monthly
+
+### 📦 Nginx пример
+
+```nginx
+server {
+    listen 80;
+    server_name alumni.nes.ru;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name alumni.nes.ru;
+
+    ssl_certificate /etc/letsencrypt/live/alumni.nes.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/alumni.nes.ru/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8814;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+    }
+}
+```
+
+### 🗄️ Postgres backup script
+
+Use `scripts/backup_postgres.sh` and run it from cron on the server.
+
+```sh
+export POSTGRES_HOST=localhost
+export POSTGRES_DB=vas3k_club
+export POSTGRES_USER=vas3k
+export POSTGRES_PASSWORD=your_password
+export BACKUP_KEEP_DAYS=14
+./scripts/backup_postgres.sh /var/backups/nes_club
+```
+
+Example cron entry (daily at 03:30):
+
+```cron
+30 3 * * * cd /srv/nes.club && /usr/bin/env POSTGRES_HOST=localhost POSTGRES_DB=vas3k_club POSTGRES_USER=vas3k POSTGRES_PASSWORD=your_password BACKUP_KEEP_DAYS=14 ./scripts/backup_postgres.sh /var/backups/nes_club
+```
 
 ## 🧑‍💻 Advanced setup for devs
 

@@ -2,6 +2,7 @@ import logging
 from enum import Enum
 from typing import Optional
 
+from django.conf import settings
 from django.db import close_old_connections
 from telegram import Update, ParseMode
 
@@ -49,7 +50,7 @@ def get_club_user(update: Update):
             update.callback_query.answer(text=f"☝️ Привяжи бота к профилю, братишка")
         else:
             update.message.reply_text(
-                f"😐 Привяжи <a href=\"https://vas3k.club/user/me/edit/bot/\">бота</a> к профилю, братишка",
+                f"😐 Привяжи <a href=\"{settings.APP_HOST}/user/me/edit/bot/\">бота</a> к профилю, братишка",
                 parse_mode=ParseMode.HTML
             )
         return None

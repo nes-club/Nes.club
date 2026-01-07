@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include, re_path
 from django.views.generic import RedirectView
@@ -79,6 +80,8 @@ urlpatterns = [
     path("auth/patreon_callback/", patreon_sync_callback, name="patreon_sync_callback"),
     path("auth/email/", email_login, name="email_login"),
     path("auth/email/code/", email_login_code, name="email_login_code"),
+
+    path("admin/", admin.site.urls),
 
     path("auth/openid/authorize", openid_authorize, name="openid_authorize"),
     path("auth/openid/token", openid_issue_token, name="openid_issue_token"),

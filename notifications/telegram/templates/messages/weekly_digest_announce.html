@@ -4,4 +4,4 @@
 {% endif %}
 👉 <b>Читать полностью: {{ settings.APP_HOST }}{% url "show_post" post.type post.slug %}</b>
 
-{% if include_unsubscribe %}⚙️ <i><a href="https://vas3k.club/user/me/edit/notifications/">Настройки дайджестов</a></i>{% endif %}
+{% if include_unsubscribe %}⚙️ <i><a href="{{ settings.APP_HOST }}/user/me/edit/notifications/">Настройки дайджестов</a></i>{% endif %}

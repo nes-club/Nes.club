@@ -1,3 +1,4 @@
+{% load static %}
 <span class="avatar user-round-avatar godmode-table-user-avatar-big">
-    <img src="{% if value %}{{ value }}{% else %}https://i.vas3k.club/v.png{% endif %}" loading="lazy" />
+    <img src="{% if value %}{{ value }}{% else %}{% static "images/logo/logo-512.png" %}{% endif %}" loading="lazy" />
 </span>

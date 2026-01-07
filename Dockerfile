@@ -12,18 +12,25 @@ RUN set -eux; \
         echo "apt-get update failed (attempt $i), retrying..." >&2; \
         sleep 10; \
     done; \
-    apt-get install --no-install-recommends -yq \
-      build-essential \
-      python3 \
-      python3-dev \
-      python3-pip \
-      libpq-dev \
-      gdal-bin \
-      libgdal-dev \
-      make \
-      npm \
-      cron \
-    && rm -rf /var/lib/apt/lists/*
+    for i in 1 2 3 4 5; do \
+        if apt-get install --no-install-recommends -yq --fix-missing \
+            build-essential \
+            python3 \
+            python3-dev \
+            python3-pip \
+            libpq-dev \
+            gdal-bin \
+            libgdal-dev \
+            make \
+            npm \
+            cron; then \
+            break; \
+        fi; \
+        echo "apt-get install failed (attempt $i), retrying..." >&2; \
+        apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30; \
+        sleep 10; \
+    done; \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
