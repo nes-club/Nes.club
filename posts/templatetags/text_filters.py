@@ -127,16 +127,15 @@ def is_video(value):
 
 @register.filter
 def resized_image(value, arg="full"):
-    if not value or "://i.vas3k.club/" not in value:
+    if not value or not settings.MEDIA_UPLOAD_URL:
         return value
 
+    base_url = settings.MEDIA_UPLOAD_URL.rstrip("/")
     if is_video(value):
         return value
 
-    if value.startswith("https://i.vas3k.club/full/"):
-        return value.replace(
-            "https://i.vas3k.club/full/", "https://i.vas3k.club/{}/".format(arg)
-        )
+    if value.startswith(f"{base_url}/full/"):
+        return value.replace(f"{base_url}/full/", f"{base_url}/{arg}/")
     else:
         return value
 

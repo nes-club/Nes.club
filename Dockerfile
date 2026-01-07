@@ -22,14 +22,18 @@ RUN set -eux; \
             gdal-bin \
             libgdal-dev \
             make \
-            npm \
-            cron; then \
+            cron \
+            ca-certificates \
+            curl \
+            gnupg; then \
             break; \
         fi; \
         echo "apt-get install failed (attempt $i), retrying..." >&2; \
         apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30; \
         sleep 10; \
     done; \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -; \
+    apt-get install --no-install-recommends -yq nodejs; \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

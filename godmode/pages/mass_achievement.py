@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.template.loader import render_to_string
 from django_q.tasks import async_task
 
@@ -23,7 +24,7 @@ class GodmodeMassAchievementForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "maxlength": 50000,
-                "placeholder": "https://vas3k.club/user/vas3k/\nhttps://vas3k.club/user/moderator/\nhttps://vas3k.club/user/petrovich/",
+                "placeholder": f"{settings.APP_HOST}/user/user1/\n{settings.APP_HOST}/user/user2/\n{settings.APP_HOST}/user/user3/",
             }
         ),
     )

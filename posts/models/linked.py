@@ -1,12 +1,14 @@
 import re
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 
 from posts.models.post import Post
 from users.models.user import User
 
-CLUB_POST_URL_RE = re.compile(r"https:\/\/vas3k.club\/[\S]+?\/([\S]+?)\/")
+APP_HOST = settings.APP_HOST.rstrip("/")
+CLUB_POST_URL_RE = re.compile(rf"{re.escape(APP_HOST)}/[\\S]+?/([\\S]+?)/")
 
 
 class LinkedPost(models.Model):

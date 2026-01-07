@@ -59,11 +59,9 @@ def patreon_sync_callback(request):
     membership = patreon.parse_active_membership(user_data)
     if not membership:
         return render(request, "error.html", {
-            "title": "Надо быть патроном, чтобы состоять в Клубе",
-            "message": "Кажется, вы не патроните <a href=\"https://www.patreon.com/join/vas3k\">@vas3k</a>. "
-                       "А это одно из основных требований для входа в Клуб.<br><br>"
-                       "Ещё иногда бывает, что ваш банк отказывает патреону в снятии денег. "
-                       "Проверьте, всё ли там у них в порядке."
+            "title": "Нет активного членства",
+            "message": "Кажется, у вас нет активного членства. "
+                       "Если доступ уже оформляли, попробуйте выйти и войти снова."
         }, status=402)
 
     if membership.email and request.me.email.lower() != membership.email.lower():

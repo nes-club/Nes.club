@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 import pytz
 import telegram
+from django.conf import settings
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
@@ -133,10 +134,11 @@ def network(request):
 
 @require_GET
 def robots(request):
+    host = settings.APP_HOST.rstrip("/")
     lines = [
         "User-agent: *",
-        "Sitemap: https://vas3k.club/sitemap.xml",
-        "Host: https://vas3k.club",
+        f"Sitemap: {host}/sitemap.xml",
+        f"Host: {host}",
         "Disallow: /intro/",
         "Disallow: /user/",
         "Disallow: /people/",

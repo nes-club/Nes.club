@@ -11,7 +11,6 @@ from authn.views.debug import debug_dev_login, debug_random_login, debug_login
 from authn.views.email import email_login, email_login_code
 from authn.views.openid import openid_authorize, openid_issue_token, openid_revoke_token, \
     openid_well_known_configuration, openid_well_known_jwks
-from authn.views.patreon import patreon_sync, patreon_sync_callback
 from badges.views import create_badge_for_post, create_badge_for_comment
 from clickers.api import api_clicker
 from club import features
@@ -76,8 +75,6 @@ urlpatterns = [
     path("join/", join, name="join"),
     path("auth/login/", login, name="login"),
     path("auth/logout/", logout, name="logout"),
-    path("auth/patreon/", patreon_sync, name="patreon_sync"),
-    path("auth/patreon_callback/", patreon_sync_callback, name="patreon_sync_callback"),
     path("auth/email/", email_login, name="email_login"),
     path("auth/email/code/", email_login_code, name="email_login_code"),
 

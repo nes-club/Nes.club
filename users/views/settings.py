@@ -1,6 +1,3 @@
-from datetime import datetime, timedelta
-
-import stripe
 from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect, get_object_or_404, render
@@ -91,37 +88,12 @@ def edit_notifications(request, user_slug):
 @require_auth
 def edit_payments(request, user_slug):
     if user_slug == "me" and request.me:
-        return redirect("edit_payments", request.me.slug, permanent=False)
+        return redirect("edit_account", request.me.slug, permanent=False)
 
-    user = get_object_or_404(User, slug=user_slug)
-    if user.id != request.me.id and not request.me.is_moderator:
-        raise Http404()
+    if not request.me:
+        return redirect("login")
 
-    top_users = User.objects\
-        .filter(
-            moderation_status=User.MODERATION_STATUS_APPROVED,
-            membership_expires_at__gte=datetime.utcnow() + timedelta(days=70)
-        )\
-        .order_by("-membership_expires_at")[:64]
-
-    subscriptions = []
-    if user.stripe_id:
-        try:
-            stripe_subscriptions = stripe.Subscription.list(customer=user.stripe_id, limit=100)
-            subscriptions = [dict(
-                id=s["id"],
-                next_charge_at=datetime.utcfromtimestamp(s["current_period_end"]),
-                amount=int(s["plan"]["amount"] / 100),
-                interval=s["plan"]["interval"],
-            ) for s in stripe_subscriptions["data"]]
-        except (stripe.error.InvalidRequestError, stripe.error.AuthenticationError):
-            subscriptions = []
-
-    return render(request, "users/edit/payments.html", {
-        "user": user,
-        "subscriptions": subscriptions,
-        "top_users": top_users,
-    })
+    return redirect("edit_account", request.me.slug, permanent=False)
 
 
 @require_auth

@@ -71,6 +71,36 @@ Create a Django superuser (optional):
 docker compose exec club_app python3 manage.py createsuperuser
 ```
 
+## 🧩 Docker compose profiles
+
+Quick comparison:
+
+1. `docker-compose.yml` (dev/local)
+   - Services: app, queue, postgres, redis, webpack
+   - Hot-reload via `${PWD}:/app`
+   - Runs on `:8000`
+2. `docker-compose.production.yml` (prod/server)
+   - Services: app, queue, redis, optional bots/cron
+   - No webpack; frontend is built in Dockerfile
+   - External Postgres
+   - Runs on `127.0.0.1:8814` (behind reverse proxy)
+3. `docker-compose.test.yml` (tests/CI)
+   - Minimal stack for running tests
+   - Not intended for real use
+
+Run commands:
+
+```sh
+# Dev/local
+docker compose up --build
+
+# Production
+docker compose -f docker-compose.production.yml up -d
+
+# Tests (example)
+docker compose -f docker-compose.test.yml up -d
+```
+
 ## 🤖 Telegram bots (optional)
 
 There are two optional bots:
@@ -150,6 +180,7 @@ All domains and secrets are read from `.env` (see `.env.production.example`).
 
 1. Create `.env` with at least:
    - `APP_HOST=https://test.ru`
+   - `CLUB_IMAGE=nesclub/club:latest` (optional; image name in registry)
    - `MEDIA_UPLOAD_URL=` (optional; leave empty for local media)
    - `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
    - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`

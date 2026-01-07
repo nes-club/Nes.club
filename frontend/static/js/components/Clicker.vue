@@ -24,7 +24,7 @@
         target="_blank"
         class="clicker-avatar"
         :title="c.user.full_name"
-        :style="{ backgroundImage: `url(${c.user.avatar || 'https://i.vas3k.club/v.png'})` }"
+        :style="{ backgroundImage: `url(${c.user.avatar || '/static/images/logo/logo-512.png'})` }"
         @click.stop="$event.stopPropagation()"
       ></a>
     </div>
