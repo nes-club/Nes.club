@@ -90,7 +90,7 @@ docker compose up --build bot helpdeskbot
 Same stack as local, but run it in the background and point `APP_HOST` to your dev domain.
 
 1. Create a `.env` file with:
-   - `APP_HOST=https://dev.alumni.nes.ru` (or `http://<server-ip>:8000`)
+   - `APP_HOST=https://test.ru` (or `http://<server-ip>:8000`)
    - Optional bot vars if you need Telegram bots (see below)
 2. Run:
 
@@ -133,7 +133,7 @@ Production is described in `docker-compose.production.yml` and expects an extern
 All domains and secrets are read from `.env` (see `.env.production.example`).
 
 1. Create `.env` with at least:
-   - `APP_HOST=https://alumni.nes.ru`
+   - `APP_HOST=https://test.ru`
    - `MEDIA_UPLOAD_URL=` (optional; leave empty for local media)
    - `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
    - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`
@@ -177,16 +177,16 @@ docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
 ```nginx
 server {
     listen 80;
-    server_name alumni.nes.ru;
+    server_name test.ru;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name alumni.nes.ru;
+    server_name test.ru;
 
-    ssl_certificate /etc/letsencrypt/live/alumni.nes.ru/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/alumni.nes.ru/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/test.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/test.ru/privkey.pem;
 
     location / {
         proxy_pass http://127.0.0.1:8814;
