@@ -31,42 +31,41 @@
             Тут можно посмотреть выданные ачивки, награды, лидеров по поддержке и прочих достойных людей.
         </div>
 
-        <div class="stats-header">💎 Миллионеры</div>
+        <div class="stats-header">🆕 Недавно присоединившиеся</div>
 
         <div class="stats-description">
-            Участники с самой длинной историей в сообществе.
-            Спасибо за вклад и поддержку нашей общей среды!<br>
+            Последние участники, которые недавно присоединились к сообществу.<br>
             Вопросы по доступу можно задать на <strong><a href="mailto:atishin@nes.ru">atishin@nes.ru</a></strong>.
         </div>
 
         <div class="block stats-top-users">
             <div class="top-users top-users-big">
-                {% for user in top_users|slice:"0:5" %}
+                {% for user in recent_users|slice:"0:5" %}
                     <a class="user user-round zoom-on-hover" href="{% url "profile" user.slug %}">
                         <span class="user-round-avatar-badge">🏆</span>
                         <span class="avatar user-round-avatar">
                             <img src="{{ user.get_avatar }}" alt="Аватар {{ user.full_name }}" loading="lazy" />
                         </span>
                         <span class="user-round-name">#{{ forloop.counter }}: {{ user.full_name }}</span>
-                        <span class="user-round-info">в сообществе с {{ user.membership_started_at | date:"E Y" }}</span>
+                        <span class="user-round-info">присоединился {{ user.created_at | date:"E Y" }}</span>
                     </a>
                 {% endfor %}
             </div>
 
             <div class="top-users top-users-medium">
-                {% for user in top_users|slice:"5:19" %}
+                {% for user in recent_users|slice:"5:19" %}
                     <a class="user user-round zoom-on-hover" href="{% url "profile" user.slug %}">
                         <span class="avatar user-round-avatar">
                             <img src="{{ user.get_avatar }}" alt="Аватар {{ user.full_name }}" loading="lazy" />
                         </span>
                         <span class="user-round-name">#{{ forloop.counter|add:5 }}: {{ user.full_name }}</span>
-                        <span class="user-round-info">с {{ user.membership_started_at | date:"F Y" | lower }}</span>
+                        <span class="user-round-info">с {{ user.created_at | date:"F Y" | lower }}</span>
                     </a>
                 {% endfor %}
             </div>
 
             <div class="top-users top-users-small">
-                {% for user in top_users|slice:"19:58" %}
+                {% for user in recent_users|slice:"19:58" %}
                     {% include "users/widgets/round.html" with user=user show_name=False %}
                 {% endfor %}
             </div>

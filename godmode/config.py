@@ -9,6 +9,7 @@ from godmode.actions.post_label import get_label_action, post_label_action
 from godmode.actions.post_owner import get_owner_action, post_owner_action
 from godmode.actions.post_pin import get_pin_action, post_pin_action
 from godmode.actions.post_view import view_post_action
+from godmode.actions.post_moderation import post_approve_post, post_reject_post
 from godmode.actions.tag_join import get_join_tag_action, post_join_tag_action
 from godmode.actions.user_achievement import get_achievement_action, post_achievement_action
 from godmode.actions.user_ban import get_ban_action, post_ban_action
@@ -17,6 +18,7 @@ from godmode.actions.user_hat import get_hat_action, post_hat_action
 from godmode.actions.user_ping import get_ping_action, post_ping_action
 from godmode.actions.user_profile import view_profile_action
 from godmode.actions.user_role import get_role_action, post_role_action
+from godmode.actions.user_moderation import post_approve_user, post_reject_user
 from godmode.actions.user_unmoderate import get_unmoderate_action, post_unmoderate_action
 from godmode.models import ClubSettings
 from godmode.admin import ClubAdmin, ClubAdminGroup, ClubAdminModel, ClubAdminPage, ClubAdminField, ClubAdminAction
@@ -133,6 +135,14 @@ ADMIN = ClubAdmin(
                         "profile": ClubAdminAction(
                             title="🪪 Посмотреть профиль",
                             get=view_profile_action
+                        ),
+                        "approve": ClubAdminAction(
+                            title="✅ Одобрить",
+                            post=post_approve_user,
+                        ),
+                        "reject": ClubAdminAction(
+                            title="❌ Отклонить",
+                            post=post_reject_user,
                         ),
                         "ban": ClubAdminAction(
                             title="💣 Забанить",
@@ -283,6 +293,14 @@ ADMIN = ClubAdmin(
                         "post": ClubAdminAction(
                             title="📝 Посмотреть пост",
                             get=view_post_action
+                        ),
+                        "approve": ClubAdminAction(
+                            title="✅ Одобрить",
+                            post=post_approve_post,
+                        ),
+                        "reject": ClubAdminAction(
+                            title="❌ Отклонить",
+                            post=post_reject_post,
                         ),
                         "pin": ClubAdminAction(
                             title="📌 Запинить/отпинить",

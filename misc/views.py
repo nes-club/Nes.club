@@ -40,18 +40,15 @@ def stats(request):
         .order_by("-sum_price")[:20]  # select more in case someone gets deleted
     ]))[:15]  # filter None
 
-    top_users = User.objects\
-        .filter(
-            moderation_status=User.MODERATION_STATUS_APPROVED,
-            membership_expires_at__gte=datetime.utcnow() + timedelta(days=70)
-        )\
-        .order_by("-membership_expires_at")[:64]
+    recent_users = User.objects\
+        .filter(moderation_status=User.MODERATION_STATUS_APPROVED)\
+        .order_by("-created_at")[:64]
 
     return render(request, "pages/stats.html", {
         "achievements": achievements,
         "latest_badges": latest_badges,
         "top_badges": top_badges,
-        "top_users": top_users,
+        "recent_users": recent_users,
     })
 
 

@@ -48,12 +48,18 @@
                                 </td>
                                 <td>
                                     <div class="godmode-actions">
-                                        <button class="button button-small button-green" onclick="approveUser('{{ user.id }}')">
-                                            ✅ Одобрить
-                                        </button>
-                                        <button class="button button-small button-red" onclick="rejectUser('{{ user.id }}')">
-                                            ❌ Отклонить
-                                        </button>
+                                        <form method="post" action="{% url "godmode_action" "users" user.id "approve" %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="button button-small button-green" type="submit">
+                                                ✅ Одобрить
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url "godmode_action" "users" user.id "reject" %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="button button-small button-red" type="submit">
+                                                ❌ Отклонить
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -98,12 +104,18 @@
                                 </td>
                                 <td>
                                     <div class="godmode-actions">
-                                        <button class="button button-small button-green" onclick="approvePost('{{ post.id }}')">
-                                            ✅ Одобрить
-                                        </button>
-                                        <button class="button button-small button-red" onclick="rejectPost('{{ post.id }}')">
-                                            ❌ Отклонить
-                                        </button>
+                                        <form method="post" action="{% url "godmode_action" "posts" post.id "approve" %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="button button-small button-green" type="submit">
+                                                ✅ Одобрить
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url "godmode_action" "posts" post.id "reject" %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button class="button button-small button-red" type="submit">
+                                                ❌ Отклонить
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
