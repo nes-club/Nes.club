@@ -1,8 +1,24 @@
+const getCookie = (name) => {
+    const cookieString = document.cookie || "";
+    const cookies = cookieString.split(";").map((cookie) => cookie.trim());
+    for (const cookie of cookies) {
+        if (cookie.startsWith(`${name}=`)) {
+            return decodeURIComponent(cookie.split("=")[1]);
+        }
+    }
+    return "";
+};
+
 const ClubApi = {
     post(href, callback) {
+        const csrfToken = getCookie("csrftoken");
         const params = {
             method: "POST",
             credentials: "include",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest",
+            },
         };
 
         fetch(href + "?is_ajax=true", params)

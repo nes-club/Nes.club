@@ -58,6 +58,24 @@ docker compose down -v
 docker compose up --build
 ```
 
+If you need a clean rebuild without cache:
+
+```sh
+docker compose down -v
+docker compose build --no-cache
+docker compose up --build
+```
+
+### Troubleshooting
+
+Clean rebuild (no cache):
+
+```sh
+docker compose down -v
+docker compose build --no-cache
+docker compose up --build
+```
+
 ### Minimal local `.env`
 
 ```dotenv
@@ -100,6 +118,383 @@ TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
 - Django admin: http://127.0.0.1:8000/admin/
 - Dev login (admin): http://127.0.0.1:8000/godmode/dev_login/
 - Random user: http://127.0.0.1:8000/godmode/random_login/
+
+## 🧱 Architecture overview (3 levels deep)
+
+### Level 1 — top‑level modules
+
+- `club/` — Django project core: settings, urls, middleware, feature flags.
+- `authn/` — authentication (email login, sessions, OAuth/OpenID apps).
+- `users/` — user profiles, roles, intro/moderation, settings.
+- `posts/` — posts, feeds, RSS, rendering pipeline.
+- `comments/` — comments, editing, moderation tools.
+- `invites/` — invite codes, activation flow.
+- `notifications/` — email/telegram notifications and digests.
+- `godmode/` — admin panel, moderation, bulk actions.
+- `rooms/` — rooms/chats, subscriptions, mutes.
+- `search/` — full‑text search index and UI.
+- `frontend/` — templates, CSS, JS, webpack.
+- `bot/` — main Telegram bot.
+- `helpdeskbot/` — helpdesk Telegram bot.
+- `ai/` — AI assistant integration and tools.
+- `gdpr/` — data export/delete workflows.
+- `common/` — shared utils, data catalogs, markdown renderer.
+- `utils/` — shared helpers and wait scripts.
+- `misc/` — stats/network/robots/assorted endpoints.
+- `badges/`, `bookmarks/`, `tags/`, `clickers/` — supporting features.
+
+### Level 2 — key files per module
+
+**Core**
+- `club/settings.py` — env‑driven settings, integrations, defaults.
+- `club/urls.py` — URL routing for site + API.
+- `club/middleware.py` — request/session middleware.
+- `club/context_processors.py` — globals for templates.
+- `club/features.py` — feature flags.
+
+**Auth**
+- `authn/views/auth.py` — `/join`, `/login`, `/logout`.
+- `authn/views/email.py` — email login code flow.
+- `authn/models/session.py` — sessions + one‑time codes.
+- `authn/views/apps.py` — OpenID/OAuth app management.
+- `authn/views/openid.py` — OpenID endpoints.
+- `authn/helpers.py` — auth cookies/session helpers.
+
+**Users**
+- `users/models/user.py` — main user model + roles + state.
+- `users/views/profile.py` — profile pages and tabs.
+- `users/views/intro.py` — intro submission + moderation.
+- `users/views/settings.py` — profile/account/notifications/bot/data.
+- `users/views/delete_account.py` — delete account request/confirm.
+- `users/services/access.py` — long‑access handling.
+
+**Posts**
+- `posts/models/post.py` — post model + counters + helpers.
+- `posts/views/feed.py` — main feed.
+- `posts/views/posts.py` — show/edit/create/delete posts.
+- `posts/views/api.py` — upvotes/bookmarks/subscriptions/RSVP.
+- `posts/forms/compose.py` — compose forms by type.
+- `posts/renderers.py` — prepares post/comment render data.
+- `posts/rss.py`, `posts/user_rss.py` — RSS.
+
+**Comments**
+- `comments/models.py` — comment model.
+- `comments/views.py` — create/edit/delete/pin.
+- `comments/api.py` — comment API (fetch lists).
+- `comments/rate_limits.py` — rate limits.
+
+**Invites**
+- `invites/models.py` — invite model + status helpers.
+- `invites/views.py` — list/show/activate/create.
+- `invites/api.py` — invite API for admins/bank.
+
+**Notifications**
+- `notifications/email/*` — email templates + sending.
+- `notifications/telegram/*` — Telegram notifications.
+- `notifications/digests.py` — digest generator.
+- `notifications/views.py` — email/telegram actions.
+- `notifications/webhooks.py` — inbound webhooks.
+
+**Godmode (Admin)**
+- `godmode/config.py` — admin UI config and sections.
+- `godmode/views/main.py` — admin CRUD rendering.
+- `godmode/pages/*` — special admin pages.
+- `godmode/actions/*` — user/post moderation actions.
+
+**Frontend**
+- `frontend/html/*.html` — main templates.
+- `frontend/static/js/main.js` — JS entry.
+- `frontend/static/js/common/api.service.js` — AJAX helper.
+- `frontend/static/css/theme.css` — theme tokens.
+- `frontend/webpack.config.js` — build config.
+
+**Bots**
+- `bot/main.py`, `bot/handlers/*` — main bot logic.
+- `helpdeskbot/main.py`, `helpdeskbot/handlers/*` — helpdesk bot.
+
+**Shared**
+- `common/data/*` — catalogs (achievements, tags, labels).
+- `common/markdown/*` — Markdown rendering.
+- `utils/*` — small helpers + wait scripts.
+
+### Level 3 — internal sub‑modules
+
+- `posts/templatetags/*` — template filters for posts.
+- `comments/templatetags/*` — template filters for comments.
+- `users/templatetags/*` — template filters for users.
+- `godmode/pages/*` — moderation/digest/invite workflows.
+- `notifications/email/*` — users, invites, badges, achievements.
+- `notifications/telegram/*` — posts/comments/users/moderation.
+- `frontend/html/posts/*` — per‑post type templates.
+- `frontend/html/comments/*` — comment templates.
+- `frontend/static/js/components/*` — Vue components (upvotes, bookmark, tags).
+
+## 🔁 End‑to‑End flows
+
+### New user → intro → moderation → access
+
+1) `/join/` → `authn/views/auth.py::join`  
+   - Validates email + invite (if needed).
+   - Creates user with `moderation_status=intro`.
+   - Grants long access via `users/services/access.py::grant_long_membership`.
+   - Sends login code.
+2) `/auth/email/code/` → `authn/views/email.py::email_login_code`  
+   - Verifies code, creates session, logs user in.
+   - Re‑grants long access (safety).
+3) `/intro/` → `users/views/intro.py`  
+   - User submits intro, status → `on_review`.
+4) `godmode/pages/moderation.py` + actions  
+   - Moderator approves → status → `approved`.
+
+### Email login
+
+- `/auth/login/` → `authn/views/auth.py::login` (form)  
+- POST `/auth/email/` → `authn/views/email.py::email_login` (send code)  
+- GET `/auth/email/code/` → `authn/views/email.py::email_login_code` (session)
+
+### Invite activation
+
+- `/invites/` → `invites/views.py::list_invites`
+- `/invite/<code>/` → `invites/views.py::show_invite`
+- POST `/invite/<code>/activate/` → `invites/views.py::activate_invite`
+  - Creates or logs in user, grants long access, marks invite used.
+
+### Flow diagram (auth + moderation)
+
+```text
+join -> email_code -> intro -> on_review -> approved
+      (invite optional)             |
+                                 godmode decision
+```
+
+### Models used by core scenarios
+
+- Email login: `User`, `Code`, `Session`
+- Invite activation: `Invite`, `User`, `Code`, `Session`
+- Intro + moderation: `User`, `Post` (intro), `Geo`
+- Feed + post view: `Post`, `PostView`, `Room`, `Tag`
+- Comments + reactions: `Comment`, `CommentVote`, `Post`, `PostVote`
+- Bookmarks + subscriptions: `PostBookmark`, `PostSubscription`
+- Rooms/chats: `Room`, `RoomSubscription`, `RoomMuted`
+- Notifications: `User` (telegram fields), `WebhookEvent`
+
+## 🧩 View functions (full index, inputs/outputs)
+
+### authn/views/auth.py
+
+- `join(request)` — Input: `POST email, invite_code, iconsent`; Output: create/verify user, send code, render email screen.
+- `login(request)` — Input: `GET goto,email`; Output: login form.
+- `logout(request)` — Input: auth cookie; Output: session deletion + redirect.
+
+### authn/views/email.py
+
+- `email_login(request)` — Input: `POST email_or_login, goto`; Output: send code + email screen.
+- `email_login_code(request)` — Input: `GET email, code, goto`; Output: session cookie + redirect.
+
+### authn/views/apps.py
+
+- `list_apps(request)` — Input: auth user; Output: list of OAuth/OpenID apps.
+- `create_app(request)` — Input: POST app fields; Output: create + redirect.
+- `edit_app(request, app_id)` — Input: app id + POST; Output: update + redirect.
+- `delete_app(request, app_id)` — Input: app id; Output: delete + redirect.
+
+### authn/views/openid.py
+
+- `openid_authorize(request)` — Input: OpenID params; Output: consent page or redirect with code.
+- `openid_issue_token(request)` — Input: token grant params; Output: JSON token.
+- `openid_revoke_token(request)` — Input: token; Output: JSON result.
+- `openid_well_known_configuration(request)` — Input: none; Output: JSON discovery doc.
+- `openid_well_known_jwks(request)` — Input: none; Output: JWKS JSON.
+
+### authn/views/debug.py
+
+- `debug_dev_login(request)` — Input: dev only; Output: admin session + redirect.
+- `debug_random_login(request)` — Input: none; Output: random user session + redirect.
+- `debug_login(request, user_slug)` — Input: slug; Output: session + redirect.
+
+### users/views/profile.py
+
+- `profile(request, user_slug)` — Input: slug; Output: profile page.
+- `profile_comments(request, user_slug)` — Input: slug; Output: profile comments tab.
+- `profile_posts(request, user_slug)` — Input: slug; Output: profile posts tab.
+- `profile_badges(request, user_slug)` — Input: slug; Output: profile badges tab.
+- `toggle_tag(request, tag_code)` — Input: POST tag; Output: JSON tag toggle.
+
+### users/views/intro.py
+
+- `intro(request)` — Input: intro form; Output: create intro post + status to `on_review`.
+
+### users/views/settings.py
+
+- `profile_settings(request, user_slug)` — Input: slug; Output: settings root.
+- `edit_profile(request, user_slug)` — Input: profile form; Output: saved profile.
+- `edit_account(request, user_slug)` — Input: account form; Output: saved account.
+- `edit_notifications(request, user_slug)` — Input: notification form; Output: saved prefs.
+- `edit_bot(request, user_slug)` — Input: bot settings; Output: saved bot links.
+- `edit_data(request, user_slug)` — Input: GDPR form; Output: data request.
+- `request_data(request, user_slug)` — Input: GDPR request; Output: queued export.
+
+### users/views/delete_account.py
+
+- `request_delete_account(request)` — Input: confirmation text; Output: send delete code.
+- `confirm_delete_account(request)` — Input: delete code; Output: mark user for deletion.
+
+### users/views/friends.py
+
+- `api_friend(request, user_slug)` — Input: POST friend/unfriend; Output: JSON state.
+- `friends(request, user_slug)` — Input: slug; Output: friends list.
+
+### users/views/muted.py
+
+- `toggle_mute(request, user_slug)` — Input: POST mute/unmute; Output: JSON state.
+- `muted(request, user_slug)` — Input: slug; Output: muted list.
+
+### users/views/notes.py
+
+- `edit_note(request, user_slug)` — Input: POST note; Output: saved note + redirect.
+
+### users/views/people.py
+
+- `people(request)` — Input: filters; Output: people directory.
+
+### users/views/messages.py
+
+- `on_review(request)` — Input: none; Output: “on review” page.
+- `rejected(request)` — Input: none; Output: rejection page.
+- `banned(request)` — Input: none; Output: ban page.
+
+### posts/views/feed.py
+
+- `feed(request, post_type=..., room_slug=None, label_code=None, ordering=..., ordering_param=None)` — Input: filters; Output: feed list.
+
+### posts/views/posts.py
+
+- `show_post(request, post_type, post_slug)` — Input: slug + type; Output: post page.
+- `unpublish_post(request, post_slug)` — Input: slug; Output: mark hidden + redirect.
+- `clear_post(request, post_slug)` — Input: slug; Output: clear content + redirect.
+- `delete_post(request, post_slug)` — Input: slug; Output: delete + redirect.
+- `compose(request)` — Input: GET/POST; Output: compose form or redirect.
+- `compose_type(request, post_type)` — Input: type; Output: compose form.
+- `edit_post(request, post_slug)` — Input: slug; Output: edit form.
+- `create_or_edit(request, post_type, post=None, mode="create")` — Input: form; Output: create/update + redirect.
+
+### posts/views/api.py
+
+- `toggle_post_bookmark(request, post_slug)` — Input: POST; Output: JSON bookmarked state.
+- `upvote_post(request, post_slug)` — Input: POST; Output: JSON vote counts.
+- `retract_post_vote(request, post_slug)` — Input: POST; Output: JSON vote counts.
+- `toggle_post_subscription(request, post_slug)` — Input: POST; Output: JSON subscription state.
+- `toggle_post_event_participation(request, post_slug)` — Input: POST; Output: JSON RSVP state.
+
+### comments/views.py
+
+- `create_comment(request, post_slug)` — Input: POST; Output: render/redirect.
+- `show_comment(request, post_slug, comment_id)` — Input: ids; Output: comment page.
+- `edit_comment(request, comment_id)` — Input: POST; Output: redirect/JSON.
+- `delete_comment(request, comment_id)` — Input: POST; Output: redirect/JSON.
+- `delete_comment_thread(request, comment_id)` — Input: POST; Output: redirect.
+- `pin_comment(request, comment_id)` — Input: POST; Output: redirect.
+- `upvote_comment(request, comment_id)` — Input: POST; Output: JSON counts.
+- `retract_comment_vote(request, comment_id)` — Input: POST; Output: JSON counts.
+
+### invites/views.py
+
+- `list_invites(request)` — Input: auth user; Output: invite list.
+- `show_invite(request, invite_code)` — Input: code; Output: invite details.
+- `activate_invite(request, invite_code)` — Input: code + email; Output: login session.
+- `godmode_generate_invite_code(request)` — Input: POST; Output: new invite JSON.
+- `create_invite(request)` — Input: POST; Output: invite + redirect.
+
+### notifications/views.py
+
+- `email_confirm(request, secret, legacy_code=None)` — Input: secret; Output: confirm email.
+- `email_unsubscribe(request, user_id, secret)` — Input: secret; Output: unsubscribe.
+- `email_digest_switch(request, digest_type, user_id, secret)` — Input: secret; Output: toggle digest.
+- `render_weekly_digest(request)` — Input: debug; Output: digest preview.
+- `link_telegram(request)` — Input: signed payload; Output: link Telegram.
+- `is_valid_telegram_data(data, bot_token)` — Input: payload; Output: bool.
+
+### rooms/views.py
+
+- `list_rooms(request)` — Input: none; Output: rooms list.
+- `redirect_to_room_chat(request, room_slug)` — Input: slug; Output: redirect to chat.
+- `toggle_room_subscription(request, room_slug)` — Input: POST; Output: JSON state.
+- `toggle_room_mute(request, room_slug)` — Input: POST; Output: JSON state.
+
+### search/views.py
+
+- `search(request)` — Input: query + filters; Output: search results.
+
+### misc/views.py
+
+- `stats(request)` — Input: none; Output: stats page.
+- `crew(request)` — Input: none; Output: crew page.
+- `write_to_crew(request, crew)` — Input: form; Output: send message.
+- `show_achievement(request, achievement_code)` — Input: code; Output: achievement page.
+- `network(request)` — Input: none; Output: network page.
+- `robots(request)` — Input: none; Output: robots.txt.
+- `generate_ical_invite(request)` — Input: event data; Output: ICS file.
+- `generate_google_invite(request)` — Input: event data; Output: Google URL.
+
+### landing/views.py
+
+- `landing(request)` — Input: none; Output: landing page.
+
+### badges/views.py
+
+- `create_badge_for_post(request, post_slug)` — Input: POST; Output: badge created.
+- `create_badge_for_comment(request, comment_id)` — Input: POST; Output: badge created.
+
+### bookmarks/views.py
+
+- `bookmarks(request)` — Input: auth user; Output: bookmark list.
+
+### tags/views.py
+
+- No public view functions (placeholder).
+
+### clickers/api.py
+
+- `api_clicker(request, clicker_id)` — Input: POST click; Output: JSON counter.
+
+### godmode/views/main.py
+
+- `godmode(request)` — Input: auth admin; Output: admin home.
+- `godmode_list_model(request, model_name)` — Input: model; Output: list.
+- `godmode_edit_model(request, model_name, item_id)` — Input: model + id; Output: edit form.
+- `godmode_delete_model(request, model_name, item_id)` — Input: model + id; Output: delete + redirect.
+- `godmode_create_model(request, model_name)` — Input: model; Output: create form.
+- `godmode_show_page(request, page_name)` — Input: page; Output: admin page.
+- `godmode_action(request, model_name, item_id, action_code)` — Input: action; Output: action result.
+
+## 🧠 Data flow into templates / JS
+
+### Feed rendering
+
+- `posts/views/feed.py` loads posts list.
+- `posts/renderers.py` attaches derived fields: upvotes, subscription state, user badges, etc.
+- Templates: `frontend/html/feed.html` + `frontend/html/posts/items/*.html`.
+
+### Post page
+
+- `posts/views/posts.py::show_post` gets post + comments.
+- `posts/renderers.py` prepares comment list with upvote state.
+- Templates: `frontend/html/posts/show/*.html` + `frontend/html/comments/types/*.html`.
+
+### Profile
+
+- `users/views/profile.py` composes user, tags, stats.
+- Templates: `frontend/html/users/profile*.html` + `frontend/html/users/widgets/*`.
+
+### JS components (AJAX actions)
+
+- `frontend/static/js/common/api.service.js`  
+  Adds CSRF + `fetch` wrappers for POST/GET.
+- `PostUpvote.vue` → calls `posts/views/api.py::upvote_post`.
+- `CommentUpvote.vue` → calls comment upvote endpoints.
+- `PostBookmark.vue` → calls `toggle_post_bookmark`.
+- `PostRSVP.vue` → calls `toggle_post_event_participation`.
+- `UserTag.vue` → calls `users/views/profile.py::toggle_tag`.
 
 Create a Django superuser (optional):
 
