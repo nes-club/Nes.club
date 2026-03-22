@@ -253,29 +253,27 @@ Full setup guide: [docs/cloudflare-setup.md](docs/cloudflare-setup.md)
 
 ### After first deploy — create the first admin
 
-There is no dev_login in production. To create the first admin user:
+There is no dev_login in production (`DEBUG=false` makes it return 403).
 
-```bash
-# Connect to your Railway service shell (Railway UI → service → Shell)
-python3 manage.py shell
+Add these three variables in Railway → Variables, then redeploy:
 
-# In the shell:
-from users.models.user import User
-from datetime import datetime, timedelta
-u = User.objects.create(
-    slug="admin",
-    email="your@email.com",
-    full_name="Your Name",
-    moderation_status="approved",
-    roles=["god"],
-    membership_started_at=datetime.utcnow(),
-    membership_expires_at=datetime.utcnow() + timedelta(days=365*10),
-    balance=10000,
-    is_email_verified=True,
-)
+```
+INITIAL_ADMIN_EMAIL=your@email.com
+INITIAL_ADMIN_SLUG=admin
+INITIAL_ADMIN_NAME=Your Name
 ```
 
-Then log in via `/auth/login/` using the email you set.
+On startup the `create_admin` management command will run, create the user, and print `Admin user created: your@email.com` in Deploy Logs.
+
+**After the deploy succeeds — delete all three `INITIAL_ADMIN_*` variables** from Railway. They are no longer needed and Railway will redeploy without them.
+
+Then log in via `/auth/login/` — enter your email, receive a one-time code, done.
+
+**Security notes:**
+- Login is email-only (no passwords) — only someone with access to your inbox can log in
+- The command checks for duplicates — re-running it with the same email does nothing
+- `INITIAL_ADMIN_*` vars only take effect at deploy time, not at runtime
+- Dev login endpoints (`/godmode/dev_login/`, `/godmode/random_login/`) return 403 when `DEBUG=false`
 
 ### Production vs dev differences
 

@@ -195,15 +195,10 @@ TELEGRAM_TOKEN / TELEGRAM_ADMIN_CHAT_ID / ...
 
 **Dev login protection:** `authn/views/debug.py` checks `if not (settings.DEBUG or settings.TESTS_RUN)` before allowing dev/random login. Setting `DEBUG=false` makes these endpoints return 403 Access Denied.
 
-**First admin in production** — no dev_login available, create via shell:
-```python
-# railway shell → python3 manage.py shell
-from users.models.user import User
-from datetime import datetime, timedelta
-User.objects.create(slug="admin", email="you@example.com", full_name="Name",
-    moderation_status="approved", roles=["god"],
-    membership_started_at=datetime.utcnow(),
-    membership_expires_at=datetime.utcnow() + timedelta(days=365*10),
-    balance=10000, is_email_verified=True)
+**First admin in production** — add these vars to Railway, redeploy, then delete them:
 ```
-Then log in via `/auth/login/` with that email.
+INITIAL_ADMIN_EMAIL=your@email.com
+INITIAL_ADMIN_SLUG=admin
+INITIAL_ADMIN_NAME=Your Name
+```
+The `create_admin` management command runs on startup, creates the user, and is idempotent (safe to re-run). Login via `/auth/login/` with that email — one-time code sent to inbox. Management command: `users/management/commands/create_admin.py`.
