@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, timedelta
 
+from asgiref.sync import sync_to_async
+
 from django.conf import settings
 from django.urls import reverse
 from django_q.tasks import async_task
@@ -25,17 +27,25 @@ log = logging.getLogger(__name__)
 async def approve_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _, post_id = update.callback_query.data.split(":", 1)
 
-    post = Post.objects.get(id=post_id)
-    if post.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+    def _approve():
+        p = Post.objects.get(id=post_id)
+        if p.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+            return p, False
+        p.moderation_status = Post.MODERATION_APPROVED
+        p.visibility = Post.VISIBILITY_EVERYWHERE
+        p.last_activity_at = datetime.utcnow()
+        p.published_at = datetime.utcnow()
+        p.save()
+        notify_post_approved(p)
+        announce_in_club_chats(p)
+        SearchIndex.update_post_index(p)
+        return p, True
+    post, changed = await sync_to_async(_approve)()
+
+    if not changed:
         await update.effective_chat.send_message(f"Пост «{post.title}» уже был отмодерирован ранее: {post.moderation_status}")
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
-
-    post.moderation_status = Post.MODERATION_APPROVED
-    post.visibility = Post.VISIBILITY_EVERYWHERE
-    post.last_activity_at = datetime.utcnow()
-    post.published_at = datetime.utcnow()
-    post.save()
 
     post_url = settings.APP_HOST + reverse("show_post", kwargs={
         "post_type": post.type,
@@ -57,18 +67,11 @@ async def approve_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     # hide buttons
     await update.callback_query.edit_message_reply_markup(reply_markup=None)
 
-    # send notifications
-    notify_post_approved(post)
-    announce_in_club_chats(post)
-
     if post.collectible_tag_code:
         async_task(notify_post_collectible_tag_owners, post)
 
     if post.room_id:
         async_task(notify_post_room_subscribers, post)
-
-    # update search index
-    SearchIndex.update_post_index(post)
 
     return None
 
@@ -77,18 +80,24 @@ async def approve_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def forgive_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _, post_id = update.callback_query.data.split(":", 1)
 
-    post = Post.objects.get(id=post_id)
-    if post.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+    def _forgive():
+        p = Post.objects.get(id=post_id)
+        if p.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+            return p, False
+        p.moderation_status = Post.MODERATION_FORGIVEN
+        p.visibility = Post.VISIBILITY_EVERYWHERE
+        p.last_activity_at = datetime.utcnow()
+        p.published_at = datetime.utcnow()
+        p.collectible_tag_code = None
+        p.save()
+        SearchIndex.update_post_index(p)
+        return p, True
+    post, changed = await sync_to_async(_forgive)()
+
+    if not changed:
         await update.effective_chat.send_message(f"Пост «{post.title}» уже был отмодерирован ранее: {post.moderation_status}")
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
-
-    post.moderation_status = Post.MODERATION_FORGIVEN
-    post.visibility = Post.VISIBILITY_EVERYWHERE
-    post.last_activity_at = datetime.utcnow()
-    post.published_at = datetime.utcnow()
-    post.collectible_tag_code = None
-    post.save()
 
     post_url = settings.APP_HOST + reverse("show_post", kwargs={
         "post_type": post.type,
@@ -102,9 +111,6 @@ async def forgive_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     # hide buttons
     await update.callback_query.edit_message_reply_markup(reply_markup=None)
-
-    # update search index
-    SearchIndex.update_post_index(post)
 
     return None
 
@@ -130,18 +136,21 @@ async def reject_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         "reject_post_false_dilemma": PostRejectReason.false_dilemma,
     }.get(code) or PostRejectReason.draft
 
-    post = Post.objects.get(id=post_id)
-    if post.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+    def _reject():
+        p = Post.objects.get(id=post_id)
+        if p.moderation_status in [Post.MODERATION_APPROVED, Post.MODERATION_FORGIVEN, Post.MODERATION_REJECTED]:
+            return p, False
+        p.moderation_status = Post.MODERATION_REJECTED
+        p.unpublish()
+        SearchIndex.update_post_index(p)
+        notify_post_rejected(p, reason)
+        return p, True
+    post, changed = await sync_to_async(_reject)()
+
+    if not changed:
         await update.effective_chat.send_message(f"Пост «{post.title}» уже был отмодерирован ранее: {post.moderation_status}")
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
-
-    post.moderation_status = Post.MODERATION_REJECTED
-    post.unpublish()
-
-    SearchIndex.update_post_index(post)
-
-    notify_post_rejected(post, reason)
 
     await update.effective_chat.send_message(
         f"👎 Пост «{post.title}» перенесен в черновики по причине «{reason.value}» ({update.effective_user.full_name})"
@@ -157,40 +166,39 @@ async def reject_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 async def approve_user_profile(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _, user_id = update.callback_query.data.split(":", 1)
 
-    user = User.objects.get(id=user_id)
-    if user.moderation_status == User.MODERATION_STATUS_APPROVED:
+    def _approve_user():
+        u = User.objects.get(id=user_id)
+        if u.moderation_status in [User.MODERATION_STATUS_APPROVED, User.MODERATION_STATUS_REJECTED]:
+            return u, None, u.moderation_status
+        u.moderation_status = User.MODERATION_STATUS_APPROVED
+        if u.created_at > datetime.utcnow() - timedelta(days=30):
+            u.created_at = datetime.utcnow()
+        u.save()
+        i = Post.objects.filter(author=u, type=Post.TYPE_INTRO).first()
+        if i:
+            i.moderation_status = Post.MODERATION_APPROVED
+            i.visibility = Post.VISIBILITY_EVERYWHERE
+            i.last_activity_at = datetime.utcnow()
+            if not i.published_at:
+                i.published_at = datetime.utcnow()
+            i.save()
+            PostSubscription.subscribe(u, i, type=PostSubscription.TYPE_ALL_COMMENTS)
+        SearchIndex.update_user_index(u)
+        notify_user_profile_approved(u)
+        send_welcome_drink(u)
+        announce_in_club_chats(i)
+        return u, i, None
+    user, intro, prev_status = await sync_to_async(_approve_user)()
+
+    if prev_status == User.MODERATION_STATUS_APPROVED:
         await update.effective_chat.send_message(f"Пользователь «{user.full_name}» уже одобрен")
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
 
-    if user.moderation_status == User.MODERATION_STATUS_REJECTED:
+    if prev_status == User.MODERATION_STATUS_REJECTED:
         await update.effective_chat.send_message(f"Пользователь «{user.full_name}» уже был отклонен")
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
-
-    user.moderation_status = User.MODERATION_STATUS_APPROVED
-    if user.created_at > datetime.utcnow() - timedelta(days=30):
-        # to avoid zeroing out the profiles of the old users
-        user.created_at = datetime.utcnow()
-    user.save()
-
-    # make intro visible
-    intro = Post.objects.filter(author=user, type=Post.TYPE_INTRO).first()
-    if intro:
-        intro.moderation_status = Post.MODERATION_APPROVED
-        intro.visibility = Post.VISIBILITY_EVERYWHERE
-        intro.last_activity_at = datetime.utcnow()
-        if not intro.published_at:
-            intro.published_at = datetime.utcnow()
-        intro.save()
-
-        PostSubscription.subscribe(user, intro, type=PostSubscription.TYPE_ALL_COMMENTS)
-
-    SearchIndex.update_user_index(user)
-
-    notify_user_profile_approved(user)
-    send_welcome_drink(user)
-    announce_in_club_chats(intro)
 
     await update.effective_chat.send_message(
         f"✅ Пользователь «{user.full_name}» одобрен ({update.effective_user.full_name})"
@@ -214,26 +222,30 @@ async def reject_user_profile(update: Update, context: ContextTypes.DEFAULT_TYPE
         "reject_user_name": UserRejectReason.name,
     }.get(code) or UserRejectReason.intro
 
-    user = User.objects.get(id=user_id)
-    if user.moderation_status == User.MODERATION_STATUS_REJECTED:
+    def _reject_user():
+        u = User.objects.get(id=user_id)
+        if u.moderation_status in [User.MODERATION_STATUS_REJECTED, User.MODERATION_STATUS_APPROVED]:
+            return u, u.moderation_status
+        u.moderation_status = User.MODERATION_STATUS_REJECTED
+        u.save()
+        notify_user_profile_rejected(u, reason)
+        send_user_rejected_email(u, reason)
+        return u, None
+    user, prev_status = await sync_to_async(_reject_user)()
+
+    if prev_status == User.MODERATION_STATUS_REJECTED:
         await update.effective_chat.send_message(
             f"Пользователь «{user.full_name}» уже был отклонен и пошел все переделывать"
         )
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
 
-    if user.moderation_status == User.MODERATION_STATUS_APPROVED:
+    if prev_status == User.MODERATION_STATUS_APPROVED:
         await update.effective_chat.send_message(
             f"Пользователь «{user.full_name}» уже был принят, его нельзя реджектить"
         )
         await update.callback_query.edit_message_reply_markup(reply_markup=None)
         return None
-
-    user.moderation_status = User.MODERATION_STATUS_REJECTED
-    user.save()
-
-    notify_user_profile_rejected(user, reason)
-    send_user_rejected_email(user, reason)
 
     await update.effective_chat.send_message(
         f"❌ Пользователь «{user.full_name}» отклонен по причине «{reason.value}» ({update.effective_user.full_name})"

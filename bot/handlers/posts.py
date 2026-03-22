@@ -1,5 +1,7 @@
 import logging
 
+from asgiref.sync import sync_to_async
+
 from django.urls import reverse
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -18,15 +20,15 @@ async def subscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return None
 
     _, post_id = update.callback_query.data.split(":", 1)
-    post = Post.objects.filter(id=post_id).first()
+    def _subscribe():
+        p = Post.objects.filter(id=post_id).first()
+        if not p:
+            return None, None
+        _, created = PostSubscription.subscribe(user=user, post=p, type=PostSubscription.TYPE_TOP_LEVEL_ONLY)
+        return p, created
+    post, is_created = await sync_to_async(_subscribe)()
     if not post:
         return None
-
-    _, is_created = PostSubscription.subscribe(
-        user=user,
-        post=post,
-        type=PostSubscription.TYPE_TOP_LEVEL_ONLY,
-    )
 
     if user.telegram_id:
         await update.callback_query.answer(
@@ -40,14 +42,15 @@ async def unsubscribe(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return None
 
     _, post_id = update.callback_query.data.split(":", 1)
-    post = Post.objects.filter(id=post_id).first()
+    def _unsubscribe():
+        p = Post.objects.filter(id=post_id).first()
+        if not p:
+            return None, None
+        unsubbed = PostSubscription.unsubscribe(user=user, post=p)
+        return p, unsubbed
+    post, is_unsubscribed = await sync_to_async(_unsubscribe)()
     if not post:
         return None
-
-    is_unsubscribed = PostSubscription.unsubscribe(
-        user=user,
-        post=post,
-    )
 
     if user.telegram_id:
         post_url = settings.APP_HOST + reverse("show_post", kwargs={

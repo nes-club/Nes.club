@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from django.conf import settings
 from telegram import Update
 from telegram.error import Forbidden
@@ -20,7 +22,7 @@ async def command_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return None
 
     secret_code = update.message.text.split(" ", 1)[1].strip()
-    user = User.objects.filter(secret_hash=secret_code).first()
+    user = await sync_to_async(User.objects.filter(secret_hash=secret_code).first)()
 
     if not user:
         await update.effective_chat.send_message("Пользователь с таким кодом не найден")
@@ -34,7 +36,7 @@ async def command_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "last_name": update.effective_user.last_name,
         "language_code": update.effective_user.language_code,
     }
-    user.save()
+    await sync_to_async(user.save)()
 
     try:
         await update.effective_chat.send_message(f"Отличный код! Приятно познакомиться, {user.slug}")

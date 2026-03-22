@@ -1,5 +1,7 @@
 import logging
 
+from asgiref.sync import sync_to_async
+
 from django.urls import reverse
 from django_q.tasks import async_task
 from telegram import Update
@@ -64,7 +66,7 @@ async def reply_to_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         log.info("Original comment not found. Skipping.")
         return None
 
-    if is_comment_rate_limit_exceeded(comment.post, user):
+    if await sync_to_async(is_comment_rate_limit_exceeded)(comment.post, user):
         await update.message.reply_text(
             f"🙅‍♂️ Извините, вы комментировали слишком часто и достигли дневного лимита"
         )
@@ -86,25 +88,22 @@ async def reply_to_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if comment.reply_to_id and comment.reply_to.reply_to_id:
         reply_to_id = comment.reply_to_id
 
-    reply = Comment.objects.create(
-        author=user,
-        post=comment.post,
-        reply_to_id=reply_to_id,
-        text=f"@{comment.author.slug}, {text}",
-        useragent="TelegramBot (like TwitterBot)",
-        metadata={
-            "telegram": update.to_dict()
-        }
-    )
-    Comment.update_post_counters(reply.post)
-    PostView.increment_unread_comments(reply)
-    PostView.register_view(
-        request=None,
-        user=user,
-        post=reply.post,
-    )
-    SearchIndex.update_comment_index(reply)
-    LinkedPost.create_links_from_text(reply.post, text)
+    def _create_reply():
+        r = Comment.objects.create(
+            author=user,
+            post=comment.post,
+            reply_to_id=reply_to_id,
+            text=f"@{comment.author.slug}, {text}",
+            useragent="TelegramBot (like TwitterBot)",
+            metadata={"telegram": update.to_dict()}
+        )
+        Comment.update_post_counters(r.post)
+        PostView.increment_unread_comments(r)
+        PostView.register_view(request=None, user=user, post=r.post)
+        SearchIndex.update_comment_index(r)
+        LinkedPost.create_links_from_text(r.post, text)
+        return r
+    reply = await sync_to_async(_create_reply)()
 
     # send all notifications
     async_task(notify_on_comment_created, reply)
@@ -136,7 +135,7 @@ async def comment_to_post(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     if not post or post.type in [Post.TYPE_BATTLE, Post.TYPE_WEEKLY_DIGEST]:
         return None
 
-    if is_comment_rate_limit_exceeded(post, user):
+    if await sync_to_async(is_comment_rate_limit_exceeded)(post, user):
         await update.message.reply_text(
             f"🙅‍♂️ Извините, вы комментировали слишком часто и достигли дневного лимита"
         )
@@ -159,24 +158,21 @@ async def comment_to_post(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
         return None
 
-    reply = Comment.objects.create(
-        author=user,
-        post=post,
-        text=text,
-        useragent="TelegramBot (like TwitterBot)",
-        metadata={
-            "telegram": update.to_dict()
-        }
-    )
-    Comment.update_post_counters(post)
-    PostView.increment_unread_comments(reply)
-    PostView.register_view(
-        request=None,
-        user=user,
-        post=post,
-    )
-    SearchIndex.update_comment_index(reply)
-    LinkedPost.create_links_from_text(post, text)
+    def _create_reply():
+        r = Comment.objects.create(
+            author=user,
+            post=post,
+            text=text,
+            useragent="TelegramBot (like TwitterBot)",
+            metadata={"telegram": update.to_dict()}
+        )
+        Comment.update_post_counters(post)
+        PostView.increment_unread_comments(r)
+        PostView.register_view(request=None, user=user, post=post)
+        SearchIndex.update_comment_index(r)
+        LinkedPost.create_links_from_text(post, text)
+        return r
+    reply = await sync_to_async(_create_reply)()
 
     # send notifications
     async_task(notify_on_comment_created, reply)

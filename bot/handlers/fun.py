@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime
 from random import randint
 
+from asgiref.sync import sync_to_async
+
 from django.conf import settings
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -21,18 +23,20 @@ async def command_random(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     post = None
     attempt = 0
 
-    while not post and attempt < 5:
-        attempt += 1
+    def _get_random_post():
         random_date = settings.LAUNCH_DATE + timedelta(
             seconds=randint(0, int((datetime.utcnow() - settings.LAUNCH_DATE).total_seconds())),
         )
-
-        post = Post.visible_objects() \
+        return Post.visible_objects() \
             .filter(published_at__lte=random_date, published_at__gte=random_date - timedelta(days=2)) \
             .filter(moderation_status=Post.MODERATION_APPROVED) \
             .exclude(type__in=[Post.TYPE_INTRO, Post.TYPE_WEEKLY_DIGEST]) \
             .order_by("?") \
             .first()
+
+    while not post and attempt < 5:
+        attempt += 1
+        post = await sync_to_async(_get_random_post)()
 
     await update.effective_chat.send_message(
         render_html_message("channel_post_announce.html", post=post),

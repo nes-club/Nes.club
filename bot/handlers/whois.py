@@ -1,3 +1,5 @@
+from asgiref.sync import sync_to_async
+
 from django.urls import reverse
 from telegram import Update
 from telegram import Chat as TGChat
@@ -50,7 +52,7 @@ async def command_whois(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return None
 
     telegram_id = from_user.id
-    user = User.objects.filter(telegram_id=telegram_id).first()
+    user = await sync_to_async(User.objects.filter(telegram_id=telegram_id).first)()
     if not user:
         await update.message.reply_text(
             f"🤨 Пользователь не найден в сообществе. Гоните его, насмехайтесь над ним!",

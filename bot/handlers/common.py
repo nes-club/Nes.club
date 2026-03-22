@@ -2,8 +2,9 @@ import logging
 from enum import Enum
 from typing import Optional
 
+from asgiref.sync import sync_to_async
+
 from django.conf import settings
-from django.db import close_old_connections
 from telegram import Update
 
 from bot.config import COMMENT_URL_RE, POST_URL_RE
@@ -40,11 +41,7 @@ class PostRejectReason(Enum):
 
 
 async def get_club_user(update: Update):
-    # HACK: Django 5+ kills long-running db connections randomly,
-    # this could help, but I'm not sure
-    close_old_connections()
-
-    user = User.objects.filter(telegram_id=update.effective_user.id).first()
+    user = await sync_to_async(User.objects.filter(telegram_id=update.effective_user.id).first)()
     if not user:
         if update.callback_query:
             await update.callback_query.answer(text=f"☝️ Привяжи бота к профилю, братишка")
@@ -88,7 +85,7 @@ async def get_club_comment(update: Update) -> Optional[Comment]:
         log.warning(f"Comment URL not found in message: {update.message.reply_to_message}")
         return None
 
-    comment = Comment.objects.filter(id=comment_id).first()
+    comment = await sync_to_async(Comment.objects.filter(id=comment_id).first)()
     if not comment:
         await update.message.reply_text(f"🤨 Коммент '{comment_id}' был удален или куда-то делся")
         return None
@@ -112,7 +109,7 @@ async def get_club_post(update: Update) -> Optional[Post]:
         log.warning(f"Post URL not found in message: {update.message.reply_to_message}")
         return None
 
-    post = Post.objects.filter(slug=post_id).first()
+    post = await sync_to_async(Post.objects.filter(slug=post_id).first)()
     if not post or not post.is_commentable:
         await update.message.reply_text(f"🤨 Пост был удален, скрыт или украден, сорян")
         return None
