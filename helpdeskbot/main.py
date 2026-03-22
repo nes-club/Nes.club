@@ -63,7 +63,7 @@ def main() -> None:
         application.run_polling()
         # ^ polling is useful for development since you don't need to expose webhook endpoints
     else:
-        log.info(f"Set webhook: {config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN}")
+        log.info(f"Set webhook: {config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL}<token>")
         application.run_webhook(
             listen=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_HOST,
             port=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_PORT,
