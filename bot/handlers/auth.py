@@ -1,7 +1,7 @@
 from django.conf import settings
-from telegram import Update, ParseMode
-from telegram.error import Unauthorized
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.error import Forbidden
+from telegram.ext import ContextTypes
 
 from bot.cache import flush_users_cache, cached_telegram_users
 from bot.decorators import ensure_fresh_db_connection
@@ -9,13 +9,13 @@ from users.models.user import User
 
 
 @ensure_fresh_db_connection
-def command_auth(update: Update, context: CallbackContext) -> None:
+async def command_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message or not update.message.text or " " not in update.message.text:
-        update.effective_chat.send_message(
+        await update.effective_chat.send_message(
             "☝️ Нужно прислать мне секретный код. "
             f"Напиши /auth и код из <a href=\"{settings.APP_HOST}/user/me/edit/bot/\">профиля в сообществе</a> "
             "через пробел. Только не публикуй его в публичных чатах!",
-            parse_mode=ParseMode.HTML
+            parse_mode="HTML"
         )
         return None
 
@@ -23,7 +23,7 @@ def command_auth(update: Update, context: CallbackContext) -> None:
     user = User.objects.filter(secret_hash=secret_code).first()
 
     if not user:
-        update.effective_chat.send_message("Пользователь с таким кодом не найден")
+        await update.effective_chat.send_message("Пользователь с таким кодом не найден")
         return None
 
     user.telegram_id = update.effective_user.id
@@ -37,14 +37,14 @@ def command_auth(update: Update, context: CallbackContext) -> None:
     user.save()
 
     try:
-        update.effective_chat.send_message(f"Отличный код! Приятно познакомиться, {user.slug}")
-    except Unauthorized:
+        await update.effective_chat.send_message(f"Отличный код! Приятно познакомиться, {user.slug}")
+    except Forbidden:
         return None
 
-    update.message.delete()
+    await update.message.delete()
 
     if user.moderation_status != User.MODERATION_STATUS_APPROVED:
-        update.effective_chat.send_message(f"Теперь осталось пройти модерацию. Бот заработает сразу после этого")
+        await update.effective_chat.send_message(f"Теперь осталось пройти модерацию. Бот заработает сразу после этого")
 
     # Refresh the cache by deleting and requesting it again
     flush_users_cache()

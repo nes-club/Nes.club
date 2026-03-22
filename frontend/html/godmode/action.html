@@ -21,6 +21,10 @@
             <span class="godmode-title">{{ admin_action.title }}</span>
         </div>
 
+        {% if error %}
+            <div class="godmode-form-errors" style="padding: 10px 0;">⚠️ {{ error }}</div>
+        {% endif %}
+
         <div class="godmode-action-form">
             {% block godmode_action_form %}
                 <form action="." method="post" enctype="multipart/form-data">

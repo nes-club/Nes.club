@@ -11,13 +11,17 @@ log = logging.getLogger(__name__)
 def send_transactional_email(recipient, subject, html, **kwargs):
     log.info(f"Sending transactional email to {recipient}")
     prepared_html = prepare_letter(html, base_url=settings.APP_HOST)
-    return send_mail(
-        subject=subject,
-        html_message=prepared_html,
-        message=re.sub(r"<[^>]+>", "", prepared_html),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[recipient],
-    )
+    try:
+        return send_mail(
+            subject=subject,
+            html_message=prepared_html,
+            message=re.sub(r"<[^>]+>", "", prepared_html),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient],
+        )
+    except Exception as e:
+        log.error(f"Failed to send transactional email to {recipient}: {e}")
+        return 0
 
 
 def send_mass_email(recipient, subject, html, unsubscribe_link):

@@ -5,12 +5,9 @@ from django.urls import path, include, re_path
 from django.views.generic import RedirectView
 
 from authn.helpers import auth_switch
-from authn.views.apps import list_apps, create_app, edit_app, delete_app
 from authn.views.auth import login, logout, join
 from authn.views.debug import debug_dev_login, debug_random_login, debug_login
 from authn.views.email import email_login, email_login_code
-from authn.views.openid import openid_authorize, openid_issue_token, openid_revoke_token, \
-    openid_well_known_configuration, openid_well_known_jwks
 from badges.views import create_badge_for_post, create_badge_for_comment
 from clickers.api import api_clicker
 from club import features
@@ -79,13 +76,6 @@ urlpatterns = [
 
     path("admin/", admin.site.urls),
 
-    path("auth/openid/authorize", openid_authorize, name="openid_authorize"),
-    path("auth/openid/token", openid_issue_token, name="openid_issue_token"),
-    path("auth/openid/revoke", openid_revoke_token, name="openid_revoke_token"),
-
-    re_path(r"^monies/.*", RedirectView.as_view(url="/join/", permanent=False)),
-    re_path(r"^payments/.*", RedirectView.as_view(url="/join/", permanent=False)),
-
     path("user/<slug:user_slug>/", profile, name="profile"),
     path("user/<slug:user_slug>.json", api_profile, name="api_profile"),
     path("user/by_telegram_id/<slug:telegram_id>.json", api_profile_by_telegram_id, name="api_profile_by_telegram_id"),
@@ -107,10 +97,6 @@ urlpatterns = [
     path("user/<slug:user_slug>/edit/data/", edit_data, name="edit_data"),
     path("user/<slug:user_slug>/edit/data/request/", request_data, name="request_user_data"),
 
-    path("apps/", list_apps, name="apps"),
-    path("apps/create/", create_app, name="create_app"),
-    path("apps/<slug:app_id>/edit/", edit_app, name="edit_app"),
-    path("apps/<slug:app_id>/delete/", delete_app, name="delete_app"),
 
     path("intro/", intro, name="intro"),
     path("people/", people, name="people"),
@@ -213,8 +199,6 @@ urlpatterns = [
     path("feed.json", json_feed, name="json_feed"),
     re_path(r"^{}/{}/feed.json$".format(POST_TYPE_RE, ORDERING_RE), json_feed, name="json_feed_ordering"),
 
-    path(".well-known/openid-configuration", openid_well_known_configuration, name="openid_well_known_configuration"),
-    path(".well-known/jwks.json", openid_well_known_jwks, name="openid_well_known_jwks"),
     path("robots.txt", robots, name="robots"),
 
     # keep these guys at the bottom

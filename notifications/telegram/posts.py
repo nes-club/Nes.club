@@ -93,7 +93,7 @@ def announce_in_online_channel(post):
     send_telegram_message(
         chat=CLUB_ONLINE,
         text=render_html_message("channel_post_announce.html", post=post),
-        parse_mode=telegram.ParseMode.HTML,
+        parse_mode="HTML",
         disable_preview=True,
     )
 
@@ -113,7 +113,7 @@ def announce_in_club_channel(post, announce_text=None, image=None):
             chat=CLUB_CHANNEL,
             text=announce_text,
             disable_preview=False,
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
 
 
@@ -123,7 +123,7 @@ def announce_in_club_chats(post):
         send_telegram_message(
             chat=CLUB_CHAT,
             text=render_html_message("channel_post_announce.html", post=post),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
             disable_preview=True,
             reply_markup=post_reply_markup(post),
         )
@@ -133,7 +133,7 @@ def announce_in_club_chats(post):
         send_telegram_message(
             chat=Chat(id=post.room.chat_id),
             text=render_html_message("channel_post_announce.html", post=post),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
             disable_preview=True,
             reply_markup=post_reply_markup(post),
         )
@@ -147,13 +147,13 @@ def notify_post_approved(post: Post):
         send_telegram_message(
             chat=Chat(id=post.author.telegram_id),
             text=render_html_message("post_approved_in_room.html", post=post),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
     else:
         send_telegram_message(
             chat=Chat(id=post.author.telegram_id),
             text=render_html_message("post_approved.html", post=post),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
 
     return None
@@ -169,7 +169,7 @@ def notify_post_rejected(post, reason):
         send_telegram_message(
             chat=Chat(id=post.author.telegram_id),
             text=text,
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
 
 
@@ -183,7 +183,7 @@ def notify_post_collectible_tag_owners(post):
                     send_telegram_message(
                         chat=Chat(id=tag_user.user.telegram_id),
                         text=render_html_message("post_collectible_tag.html", post=post, tag=tag),
-                        parse_mode=telegram.ParseMode.HTML,
+                        parse_mode="HTML",
                         reply_markup=post_reply_markup(post),
                     )
 
@@ -221,7 +221,7 @@ def notify_post_room_subscribers(post):
                 send_telegram_message(
                     chat=Chat(id=subscriber.user.telegram_id),
                     text=render_html_message("post_room_subscriber.html", post=post, room=post.room),
-                    parse_mode=telegram.ParseMode.HTML,
+                    parse_mode="HTML",
                     reply_markup=post_reply_markup(post),
                 )
 
@@ -246,13 +246,13 @@ def notify_post_label_changed(post):
     send_telegram_message(
         chat=ADMIN_CHAT,
         text=render_html_message(moderator_template, post=post),
-        parse_mode=telegram.ParseMode.HTML,
+        parse_mode="HTML",
     )
     if post.label_code is not None and post.label['notify'] and post.author.telegram_id:
         send_telegram_message(
             chat=Chat(id=post.author.telegram_id),
             text=render_html_message("post_label.html", post=post),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
 
 

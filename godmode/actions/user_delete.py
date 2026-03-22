@@ -39,7 +39,6 @@ def post_delete_action(request, user: User, **context):
 
         # Delete account
         if data["delete_account"] and request.me.is_god:
-            user.membership_expires_at = datetime.utcnow()
             user.is_banned_until = datetime.utcnow() + timedelta(days=9999)
             user.metadata = {
                 **(user.metadata or {}),

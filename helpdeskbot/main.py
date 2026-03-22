@@ -15,24 +15,24 @@ from helpdeskbot.handlers.question import update_discussion_message_id, Question
 from helpdeskbot.handlers.answers import on_reply_message
 
 from django.conf import settings
-from telegram import Update, ParseMode
-from telegram.ext import Updater, CommandHandler, CallbackContext, Filters, MessageHandler
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes, filters, MessageHandler
 
 log = logging.getLogger(__name__)
 
 
-def on_help_command(update: Update, context: CallbackContext) -> None:
-    update.effective_chat.send_message(
+async def on_help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.effective_chat.send_message(
         "🤔 <b>Я бот справочной сообщества.</b>\n\n"
         "Через меня можно задать вопрос и получить ответы от других участников.\n\n\n"
         "Список команд:\n\n"
         "/start - Создание и отправка вопроса\n"
         "/help - Справка",
-        parse_mode=ParseMode.HTML
+        parse_mode="HTML"
     )
 
 
-def on_telegram_admin_bot_message(update: Update, context: CallbackContext) -> None:
+async def on_telegram_admin_bot_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message:
         return None
 
@@ -45,35 +45,31 @@ def on_telegram_admin_bot_message(update: Update, context: CallbackContext) -> N
 
 
 def main() -> None:
-    # Initialize telegram
-    updater = Updater(config.TELEGRAM_HELP_DESK_BOT_TOKEN, use_context=True)
+    if not config.TELEGRAM_HELP_DESK_BOT_TOKEN:
+        log.warning("TELEGRAM_HELP_DESK_BOT_TOKEN is not set, helpdeskbot is disabled")
+        return
 
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
+    # Initialize telegram
+    application = Application.builder().token(config.TELEGRAM_HELP_DESK_BOT_TOKEN).build()
 
     # Set handlers
-    dispatcher.add_handler(CommandHandler("help", on_help_command))
-    dispatcher.add_handler(QuestionHandler("start"))
-    dispatcher.add_handler(MessageHandler(Filters.reply & ~Filters.command, on_reply_message))
-    dispatcher.add_handler(MessageHandler(Filters.user(config.TELEGRAM_ADMIN_BOT_ID), on_telegram_admin_bot_message))
+    application.add_handler(CommandHandler("help", on_help_command))
+    application.add_handler(QuestionHandler("start"))
+    application.add_handler(MessageHandler(filters.REPLY & ~filters.COMMAND, on_reply_message))
+    application.add_handler(MessageHandler(filters.User(user_id=config.TELEGRAM_ADMIN_BOT_ID), on_telegram_admin_bot_message))
 
     # Start the bot
     if settings.DEBUG:
-        updater.start_polling()
+        application.run_polling()
         # ^ polling is useful for development since you don't need to expose webhook endpoints
     else:
-        updater.start_webhook(
+        log.info(f"Set webhook: {config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN}")
+        application.run_webhook(
             listen=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_HOST,
             port=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_PORT,
-            url_path=config.TELEGRAM_HELP_DESK_BOT_TOKEN
+            url_path=config.TELEGRAM_HELP_DESK_BOT_TOKEN,
+            webhook_url=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN,
         )
-        log.info(f"Set webhook: {config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN}")
-        updater.bot.set_webhook(
-            url=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN
-        )
-
-    # Wait all threads
-    updater.idle()
 
 
 if __name__ == '__main__':

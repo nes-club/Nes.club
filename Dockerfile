@@ -1,49 +1,22 @@
-FROM ubuntu:24.04
-ENV MODE dev
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ENV BROWSERSLIST_IGNORE_OLD_DATA=1
+FROM node:20-slim AS frontend-builder
 
-RUN set -eux; \
-    sed -i 's|http://ports.ubuntu.com|https://ports.ubuntu.com|g' /etc/apt/sources.list; \
-    for i in 1 2 3 4 5; do \
-        if apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30; then \
-            break; \
-        fi; \
-        echo "apt-get update failed (attempt $i), retrying..." >&2; \
-        sleep 10; \
-    done; \
-    for i in 1 2 3 4 5; do \
-        if apt-get install --no-install-recommends -yq --fix-missing \
-            build-essential \
-            python3 \
-            python3-dev \
-            python3-pip \
-            libpq-dev \
-            gdal-bin \
-            libgdal-dev \
-            make \
-            cron \
-            ca-certificates \
-            curl \
-            gnupg; then \
-            break; \
-        fi; \
-        echo "apt-get install failed (attempt $i), retrying..." >&2; \
-        apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30; \
-        sleep 10; \
-    done; \
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -; \
-    apt-get install --no-install-recommends -yq nodejs; \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+
+FROM python:3.12
+ENV MODE=dev
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 WORKDIR /app
 
 COPY . /app
-COPY etc/crontab /etc/crontab
-RUN chmod 600 /etc/crontab
 
-RUN cd frontend && npm ci && npm run build && cd ..
+COPY --from=frontend-builder /app/frontend/static/dist/ /app/frontend/static/dist/
+COPY --from=frontend-builder /app/frontend/webpack-stats.json /app/frontend/webpack-stats.json
 
 RUN pip3 install pipenv
 RUN if [ "$MODE" = "production" ]; then \

@@ -30,6 +30,7 @@ def post_achievement_action(request, user: User, **context):
         data = form.cleaned_data
 
         # Achievements
+        achievement = None
         if data["new_achievement"]:
             achievement = Achievement.objects.filter(code=data["new_achievement"]).first()
             if achievement:
@@ -41,6 +42,14 @@ def post_achievement_action(request, user: User, **context):
                     send_new_achievement_email(user_achievement)
                     notify_user_new_achievement(user_achievement)
                     notify_admins_on_achievement(user_achievement, from_user=request.me)
+
+        if not achievement:
+            return render(request, "godmode/action.html", {
+                **context,
+                "item": user,
+                "form": UserAchievementForm(request.POST),
+                "error": f"Ачивка «{data['new_achievement']}» не найдена в базе данных. Запустите update_achievements.",
+            })
 
         return render(request, "godmode/message.html", {
             **context,

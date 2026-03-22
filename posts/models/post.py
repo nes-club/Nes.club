@@ -30,6 +30,7 @@ class Post(models.Model, ModelDiffMixin):
     TYPE_GUIDE = "guide"
     TYPE_THREAD = "thread"
     TYPE_DOCS = "docs"
+    TYPE_JOB = "job"
     TYPES = [
         (TYPE_POST, "Текст"),
         (TYPE_INTRO, "#intro"),
@@ -43,6 +44,7 @@ class Post(models.Model, ModelDiffMixin):
         (TYPE_GUIDE, "Путеводитель"),
         (TYPE_THREAD, "Тред"),
         (TYPE_DOCS, "Доки"),
+        (TYPE_JOB, "Вакансия"),
     ]
 
     TYPE_TO_EMOJI = {
@@ -57,6 +59,7 @@ class Post(models.Model, ModelDiffMixin):
         TYPE_GUIDE: "🗺",
         TYPE_THREAD: "🗄",
         TYPE_DOCS: "📚",
+        TYPE_JOB: "💼",
     }
 
     TYPE_TO_PREFIX = {
@@ -71,6 +74,7 @@ class Post(models.Model, ModelDiffMixin):
         TYPE_GUIDE: "🗺",
         TYPE_THREAD: "Тред:",
         TYPE_DOCS: "",
+        TYPE_JOB: "Вакансия:",
     }
 
     MODERATION_NONE = "none"
@@ -306,11 +310,15 @@ class Post(models.Model, ModelDiffMixin):
                 year = self.effective_published_at.year + 1
             else:
                 year = self.effective_published_at.year
+            if not day:
+                return datetime.utcnow()
             return datetime(year, month, day, hour, minute, second)
         return datetime.utcnow()
 
     @property
     def event_participants(self):
+        if not self.metadata:
+            return []
         participant_ids = self.metadata.get("event", {}).get("participants", [])
         if not participant_ids:
             return []

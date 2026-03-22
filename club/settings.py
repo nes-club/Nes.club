@@ -9,15 +9,6 @@ from sentry_sdk.integrations.redis import RedisIntegration
 
 load_dotenv()
 
-warnings.filterwarnings(
-    "ignore",
-    message="python-telegram-bot is using upstream urllib3.*",
-)
-warnings.filterwarnings(
-    "ignore",
-    message="Using requests library for http requests.*",
-)
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv("SECRET_KEY") or "wow so secret"
@@ -57,7 +48,6 @@ INSTALLED_APPS = [
     "godmode.apps.GodmodeConfig",
     "invites.apps.InvitesConfig",
     "clickers.apps.ClickersConfig",
-    "ai.apps.AiConfig",
     "simple_history",
     "django_q",
     "webpack_loader",
@@ -239,26 +229,6 @@ GDPR_DELETE_TIMEDELTA = timedelta(hours=2 * 24)
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
-JWT_PRIVATE_KEY = (os.getenv("JWT_PRIVATE_KEY") or "").replace("\\n", "\n")
-JWT_PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
-MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvEDEGKL0b+okI6QBBMiu
-3GOHOG/Ml4KJ13tWyPnl5yGswf9rUGOLo0T0dXxSwxp/6g1ZeYqDR7jckuP6A3Rv
-DPdKYc44eG3YB/bO2Yeq57Kx1rxvFvWZap2jTyu2wbALmmeg0ne3wkXPExTy/EQ4
-LDft8nraSJuW7c+qrah+F94qKGVNvilf20V5S186iGpft2j/UAl9s81kzZKBwk7M
-B+u4jSH8E3KHZVb28CVNOpnYYcLBNLsjGwZk6qbiuq1PEq4AZ5TN3EdoVP9nbIGY
-BZAMwoNxP4YQN+mDRa6BU2Mhy+c9ea+fuCKRxNi3+nYjF00D28fErFFcA+BEe4A1
-Hhq25PsVfUgOYvpv1F/ImPJBl8q728DEzDcj1QzL0flbPUMBV6Bsq+l2X3OdrVtQ
-GXiwJfJRWIVRVDuJzdH+Te2bvuxk2d0Sq/H3uzXYd/IQU5Jw0ZZRTKs+Rzdpb8ui
-eoDmq2uz6Q2WH2gPwyuVlRfatJOHCUDjd6dE93lA0ibyJmzxo/G35ns8sZoZaJrW
-rVdFROm3nmAIATC/ui9Ex+tfuOkScYJ5OV1H1qXBckzRVwfOHF0IiJQP4EblLlvv
-6CEL2VBz0D2+gE4K4sez6YSn3yTg9TkWGhXWCJ7vomfwIfHIdZsItqay156jMPaV
-c+Ha7cw3U+n6KI4idHLiwa0CAwEAAQ==
------END PUBLIC KEY-----"""
-
-OPENID_JWT_ALGORITHM = "RS256"
-OPENID_JWT_EXPIRE_SECONDS = 24 * 60 * 60  # 24 hours
-OPENID_CODE_EXPIRE_SECONDS = 300  # 5 minutes
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 MEDIA_UPLOAD_URL = os.getenv("MEDIA_UPLOAD_URL", "")
@@ -291,8 +261,6 @@ TELEGRAM_BOT_WEBHOOK_HOST = "0.0.0.0"
 TELEGRAM_BOT_WEBHOOK_PORT = 8816
 
 WEBHOOK_SECRETS = set(os.getenv("WEBHOOK_SECRETS", "").split(","))
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 DEFAULT_AVATAR = f"{APP_HOST}/static/images/logo/logo-512.png"
 COMMENT_EDITABLE_TIMEDELTA = timedelta(hours=48)

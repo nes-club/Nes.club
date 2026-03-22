@@ -7,6 +7,8 @@
 
     --nes-blue: #1C3C8C;
     --nes-red: #D9252A;
+    --nes-blue-tint: rgba(28, 60, 140, 0.07);
+    --nes-red-tint: rgba(217, 37, 42, 0.07);
 
     --button-color: #FFF;
     --button-bg-color: var(--nes-blue);
@@ -19,17 +21,17 @@
 }
 
 html, html[theme="light"] {
-    --bg-color: #FCFDFF;
-    --opposite-bg-color: #282c35;
+    --bg-color: #F4F6FC;
+    --opposite-bg-color: #252a38;
 
     --text-color: #333;
     --brighter-text-color: #000;
     --opposite-text-color: #DDD;
 
     --block-bg-color: #FFF;
-    --opposite-block-bg-color: #282c35;
-    --block-shadow: 10px 15px 40px rgba(83, 91, 110, 0.11);
-    --block-border: none;
+    --opposite-block-bg-color: #252a38;
+    --block-shadow: 4px 8px 28px rgba(28, 60, 140, 0.09);
+    --block-border: solid 1px rgba(28, 60, 140, 0.1);
 
     --link-color: var(--nes-blue);
     --link-hover-color: var(--nes-red);
@@ -48,28 +50,28 @@ html, html[theme="light"] {
 
     --input-color: #000;
     --input-bg-color: #fff;
-    --input-border-color: #ddd;
+    --input-border-color: rgba(28, 60, 140, 0.2);
     --input-toolbar-bg: #fff;
     --input-toolbar-button-color: #000;
     --input-link: #7f8c8d;
-    --input-selection-color: #d7d4f0;
+    --input-selection-color: rgba(28, 60, 140, 0.15);
 }
 
 html[theme="dark"] {
-    --bg-color: #282c35;
-    --opposite-bg-color: #FCFDFF;
+    --bg-color: #20242f;
+    --opposite-bg-color: #F4F6FC;
 
     --text-color: #DDD;
     --brighter-text-color: #FFF;
     --opposite-text-color: #333;
 
-    --block-bg-color: #1B1B1C;
-    --opposite-block-bg-color: #FFF;
+    --block-bg-color: #191d28;
+    --opposite-block-bg-color: #F4F6FC;
     --block-shadow: 0px 0px 0px #000;
-    --block-border: solid 1px #FCFDFF;
+    --block-border: solid 1px rgba(142, 163, 255, 0.12);
 
     --link-color: #8ea3ff;
-    --link-hover-color: #ff6b6f;
+    --link-hover-color: #ff7c7f;
     --visited-link-color: #8a96c7;
 
     --button-color: #FFF;
@@ -84,30 +86,30 @@ html[theme="dark"] {
     --select-bg-color: #FFF;
 
     --input-color: #fff;
-    --input-bg-color: #373c48;
-    --input-border-color: #333;
-    --input-toolbar-bg: #252a35;
+    --input-bg-color: #2a2f3e;
+    --input-border-color: rgba(142, 163, 255, 0.2);
+    --input-toolbar-bg: #1e2230;
     --input-toolbar-button-color: #fff;
     --input-link: #b3b6ff;
-    --input-selection-color: #978fd8;
+    --input-selection-color: rgba(142, 163, 255, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
     html {
-        --bg-color: #282c35;
-        --opposite-bg-color: #FCFDFF;
+        --bg-color: #20242f;
+        --opposite-bg-color: #F4F6FC;
 
         --text-color: #DDD;
         --brighter-text-color: #FFF;
         --opposite-text-color: #333;
 
-        --block-bg-color: #1B1B1C;
-        --opposite-block-bg-color: #FFF;
+        --block-bg-color: #191d28;
+        --opposite-block-bg-color: #F4F6FC;
         --block-shadow: 0px 0px 0px #000;
-        --block-border: solid 1px #FCFDFF;
+        --block-border: solid 1px rgba(142, 163, 255, 0.12);
 
         --link-color: #8ea3ff;
-        --link-hover-color: #ff6b6f;
+        --link-hover-color: #ff7c7f;
         --visited-link-color: #8a96c7;
 
         --button-color: #FFF;
@@ -210,7 +212,7 @@ select,
     input:focus,
     textarea:focus,
     .CodeMirror-focused {
-        box-shadow: 0 4px 12px -2px rgba(9,30,66,.45),0 0 0 1px rgba(9,30,66,.32);
+        box-shadow: 0 4px 12px -2px rgba(28, 60, 140, 0.25), 0 0 0 2px rgba(28, 60, 140, 0.18);
     }
 
         .editor-toolbar {

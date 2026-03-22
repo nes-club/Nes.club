@@ -1,0 +1,202 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+NES alumni community platform — a private, invite-driven fork of [vas3k.club](https://github.com/vas3k/vas3k.club). Django monolith with integrated Telegram bots and a hybrid Vue.js frontend.
+
+## Local Development with Docker
+
+### First-time setup
+
+```bash
+cp club/.env.example club/.env
+# Edit club/.env — at minimum set SECRET_KEY
+```
+
+The dev Docker Compose bakes in all DB/Redis credentials, so only `SECRET_KEY` is strictly required to boot. Telegram tokens are optional for local work (bots will fail to start but the web app is unaffected).
+
+### Start / stop
+
+```bash
+# Start everything (builds images on first run, hot-reloads code)
+docker compose up --build
+
+# Start without bots (faster, enough for web development)
+docker compose up club_app queue postgres redis webpack
+
+# Stop and wipe DB (full reset)
+docker compose down -v
+
+# Restart a single container after code changes
+docker compose restart club_app
+```
+
+### Dev URLs
+
+| URL | Purpose |
+|-----|---------|
+| http://127.0.0.1:8000/ | App |
+| http://127.0.0.1:8000/godmode/dev_login/ | Log in as a fixed admin user |
+| http://127.0.0.1:8000/godmode/random_login/ | Log in as a random test user |
+
+### What each container does
+
+| Container | Command | Purpose |
+|-----------|---------|---------|
+| `club_app` | `make docker-run-dev` | Django dev server (port 8000). Runs `migrate` and `update_tags` on each start. |
+| `queue` | `make docker-run-queue` | django-q2 worker. Runs `setup_schedules` first to register all CRON tasks. |
+| `postgres` | postgres:14 image | Database. Credentials: `postgres/postgres`, DB: `nes_club`. |
+| `redis` | redis:alpine image | Cache and django-q2 broker. |
+| `webpack` | `npm run watch` | Webpack dev server — hot-reloads JS/CSS, writes `webpack-stats.json`. |
+| `bot` | `make docker-run-bot` | Main Telegram bot (polling mode in dev). Optional. |
+| `helpdeskbot` | `make docker-run-helpdeskbot` | Support Telegram bot. Optional. |
+
+### Logs
+
+```bash
+docker compose logs -f club_app     # Web server logs
+docker compose logs -f queue        # Background task logs
+docker compose logs -f bot          # Telegram bot logs
+```
+
+### Database
+
+```bash
+# Apply new migrations (also runs automatically on club_app start)
+docker compose exec club_app python3 manage.py migrate
+
+# Open psql inside the container
+docker compose exec postgres psql -U postgres nes_club
+
+# Local psql (if postgres port is forwarded)
+make psql
+```
+
+### Testing & Linting
+
+```bash
+make test           # Run Django tests (with pipenv)
+make test-ci        # Run Django tests (CI mode, no pipenv)
+make lint           # flake8 (syntax errors only, warnings are exit-zero)
+```
+
+### Frontend (without Docker)
+
+```bash
+make build-frontend   # One-time webpack build (uses npm in frontend/)
+# The webpack container in docker compose handles this automatically
+```
+
+## Architecture
+
+### Stack
+- **Backend**: Django 5.1, Python 3.12, PostgreSQL 14, Redis, django-q2 (task queue)
+- **Frontend**: Vue.js 2 components embedded in Django templates (not SPA), Webpack 5
+- **Bots**: python-telegram-bot 20.7 (`bot/`, `helpdeskbot/`) — async, Application builder pattern
+- **Production server**: Gunicorn + Uvicorn workers (ASGI)
+
+### Django Apps
+| App | Purpose |
+|-----|---------|
+| `authn/` | Email one-time-code login, sessions |
+| `users/` | Profiles, roles, intro flow, access control |
+| `posts/` | Feed, post types (incl. `job`), RSS, rendering pipeline |
+| `comments/` | Comments, voting, rate limiting |
+| `invites/` | Invite codes and activation |
+| `notifications/` | Email/Telegram notifications and weekly digests |
+| `godmode/` | Admin panel, moderation, bulk actions |
+| `rooms/` | Telegram channel directory and subscriptions |
+| `search/` | Full-text search (PostgreSQL, Russian stemming) |
+| `gdpr/` | Data export/delete workflows |
+| `club/` | Django project core: settings, URLs, middleware, feature flags, scheduled tasks |
+| `common/` | Shared utilities, Markdown renderer, data catalogs |
+
+### Hybrid Frontend Pattern
+Vue.js components are **not a SPA** — they are compiled by webpack and mounted directly inside Django HTML templates. `frontend/static/js/main.js` is the webpack entry point that registers all Vue components. Webpack outputs a `webpack-stats.json` manifest; Django uses it to inject asset hashes into templates via `django-webpack-loader`.
+
+### Key Flows
+
+**Email login**: `/auth/login/` → send one-time code → `/auth/email/code/` → create `Session`
+
+**New user intro**: `/join/` (creates user with status `intro`) → `/intro/` (submit) → godmode moderation → status `approved`
+
+**Invite activation**: `/invite/<code>/` → POST activate → create/login user, grant long-access token, mark invite used
+
+**Background jobs**: All async work (emails, Telegram notifications, digests) goes through django-q2; failures reported to Sentry.
+
+### Feature Flags
+`club/features.py` — toggle features without deployment.
+
+### Key Files
+- `club/settings.py` — all config, env-driven
+- `club/urls.py` — full URL routing (80+ routes)
+- `club/middleware.py` — request/session middleware
+- `frontend/webpack.config.js` — webpack config
+- `common/markdown/` — custom mistune 3 renderers
+- `notifications/digests.py` — weekly digest generation
+
+## Environment Setup
+
+`club/.env.example` lists all supported variables. For local Docker development only `SECRET_KEY` is required — DB and Redis are pre-configured in `docker-compose.yml`. For production copy `.env.production.example` and fill in all values.
+
+Key variables:
+- `SECRET_KEY` — Django secret key
+- `TELEGRAM_TOKEN` — main bot token
+- `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` — SMTP credentials
+- `MEDIA_UPLOAD_URL` / `MEDIA_UPLOAD_CODE` — image upload service
+
+## Production
+
+### On a VPS (docker-compose.production.yml)
+
+Production uses `docker-compose.production.yml` with:
+- Gunicorn: 5 Uvicorn workers, port `$PORT` (default 8814), behind Nginx
+- Containers: `club_app`, `queue` (also runs scheduled tasks via django-q2), `bot`, `helpdeskbot`, `redis`
+- No separate cron container — all scheduled tasks run inside the `queue` container via `setup_schedules` + `qcluster`
+- Redis with health checks; JSON log driver with rotation
+
+```bash
+docker compose -f docker-compose.production.yml up -d --build
+```
+
+### On Railway
+
+Railway deploys directly from the `Dockerfile` — no docker-compose needed. A `railway.json` is included in the repo root.
+
+**Services to create** (one per Railway service, all using the same Dockerfile):
+
+| Service | Start command |
+|---------|--------------|
+| `club_app` | `make docker-run-production` |
+| `queue` | `make docker-run-queue` |
+| `bot` _(optional)_ | `make docker-run-bot` |
+| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` |
+
+**Required env vars for Railway** (set `DEBUG=false` — this disables all dev login endpoints):
+```
+MODE=production
+DEBUG=false
+SECRET_KEY=<long random string>
+APP_HOST=https://<your-app>.railway.app
+POSTGRES_HOST / POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD  ← from Railway Postgres plugin
+REDIS_HOST  ← from Railway Redis plugin
+EMAIL_HOST / EMAIL_PORT / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD
+TELEGRAM_TOKEN / TELEGRAM_ADMIN_CHAT_ID / ...
+```
+
+**Dev login protection:** `authn/views/debug.py` checks `if not (settings.DEBUG or settings.TESTS_RUN)` before allowing dev/random login. Setting `DEBUG=false` makes these endpoints return 403 Access Denied.
+
+**First admin in production** — no dev_login available, create via shell:
+```python
+# railway shell → python3 manage.py shell
+from users.models.user import User
+from datetime import datetime, timedelta
+User.objects.create(slug="admin", email="you@example.com", full_name="Name",
+    moderation_status="approved", roles=["god"],
+    membership_started_at=datetime.utcnow(),
+    membership_expires_at=datetime.utcnow() + timedelta(days=365*10),
+    balance=10000, is_email_verified=True)
+```
+Then log in via `/auth/login/` with that email.

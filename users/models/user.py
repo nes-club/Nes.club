@@ -15,12 +15,8 @@ from utils.strings import random_string
 
 class User(models.Model, ModelDiffMixin):
     MEMBERSHIP_PLATFORM_DIRECT = "direct"
-    MEMBERSHIP_PLATFORM_PATREON = "patreon"
-    MEMBERSHIP_PLATFORM_CRYPTO = "crypto"
     MEMBERSHIP_PLATFORMS = [
         (MEMBERSHIP_PLATFORM_DIRECT, "Direct"),
-        (MEMBERSHIP_PLATFORM_PATREON, "Legacy"),
-        (MEMBERSHIP_PLATFORM_CRYPTO, "Crypto"),
     ]
 
     EMAIL_DIGEST_TYPE_NOPE = "nope"
@@ -73,6 +69,9 @@ class User(models.Model, ModelDiffMixin):
     avatar = models.URLField(null=True, blank=True)
     secret_hash = models.CharField(max_length=24, unique=True)
 
+    year_of_graduation = models.PositiveSmallIntegerField(null=True, blank=True)
+    faculty = models.CharField(max_length=128, null=True, blank=True)
+
     company = models.TextField(null=True)
     position = models.TextField(null=True)
     city = models.CharField(max_length=128, null=True)
@@ -95,7 +94,6 @@ class User(models.Model, ModelDiffMixin):
         max_length=128, choices=MEMBERSHIP_PLATFORMS,
         default=MEMBERSHIP_PLATFORM_DIRECT, null=False
     )
-    patreon_id = models.CharField(max_length=128, null=True, unique=True)
     membership_platform_data = models.JSONField(null=True)
 
     email_digest_type = models.CharField(
@@ -247,7 +245,7 @@ class User(models.Model, ModelDiffMixin):
 
     @property
     def is_active_membership(self):
-        return self.membership_expires_at >= datetime.utcnow()
+        return True  # membership is perpetual for all approved members
 
     @property
     def secret_auth_code(self):

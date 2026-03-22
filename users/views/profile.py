@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.db.models import Q
 from django.http import Http404
@@ -28,7 +30,7 @@ def profile(request, user_slug):
     if request.me and user.id == request.me.id:
         # handle auth redirect
         goto = request.GET.get("goto")
-        if goto and goto.startswith(settings.APP_HOST):
+        if goto and urlparse(goto).netloc == urlparse(settings.APP_HOST).netloc:
             return redirect(goto)
 
         # moderation status check for new-joiners

@@ -92,7 +92,7 @@ def create_comment(request, post_slug):
                 "title": "Какая-то ошибка при публикации комментария 🤷‍♂️",
                 "message": f"Мы уже получили оповещение и скоро пофиксим. "
                            f"Ваш коммент мы сохранили чтобы вы могли скопировать его и запостить еще раз:",
-                "data": {"saved_text": form.cleaned_data.get("text")}
+                "data": {"saved_text": request.POST.get("text")}
             }, status=500)
 
     raise Http404()

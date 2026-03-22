@@ -1,24 +1,32 @@
+x-app-env: &app-env
+  MODE: dev
+  DEBUG: "true"
+  PYTHONUNBUFFERED: "1"
+  PYTHONWARNINGS: ignore
+  POSTGRES_DB: nes_club
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_HOST: postgres
+  REDIS_DB: "0"
+  REDIS_HOST: redis
+
+x-app-base: &app-base
+  build:
+    context: .
+  environment:
+    <<: *app-env
+  volumes:
+    - .:/app:delegated
+  restart: always
+  depends_on:
+    - postgres
+    - redis
+
 services:
-  club_app: &app
-    build:
-      dockerfile: Dockerfile
-      context: .
-    command: make docker-run-dev
+  club_app:
+    <<: *app-base
     container_name: club_app
-    environment:
-      - MODE=dev
-      - DEBUG=true
-      - PYTHONUNBUFFERED=1
-      - PYTHONWARNINGS=ignore
-      - POSTGRES_DB=nes_club
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=postgres
-      - REDIS_DB=0
-      - REDIS_HOST=redis
-    restart: always
-    volumes:
-      - ${PWD}:/app:delegated # enable hot code reload in debug mode
+    command: make docker-run-dev
     depends_on:
       - postgres
       - redis
@@ -28,95 +36,40 @@ services:
       - "8000:8000"
 
   queue:
-    build:
-      dockerfile: Dockerfile
-      context: .
+    <<: *app-base
     command: make docker-run-queue
-    environment:
-      - MODE=dev
-      - DEBUG=true
-      - PYTHONUNBUFFERED=1
-      - PYTHONWARNINGS=ignore
-      - POSTGRES_DB=nes_club
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=postgres
-      - REDIS_DB=0
-      - REDIS_HOST=redis
-    restart: always
-    volumes:
-      - ${PWD}:/app:delegated
-    depends_on:
-      - postgres
-      - redis
 
   postgres:
     image: postgres:14
     container_name: club_postgres
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=nes_club
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nes_club
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:alpine
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
 
   webpack:
-    image: node:14-slim
-    command: npm run watch
-    restart: always
+    image: node:20-slim
+    command: sh -c "npm ci && npm run watch"
     environment:
-      - BROWSERSLIST_IGNORE_OLD_DATA=1
+      BROWSERSLIST_IGNORE_OLD_DATA: "1"
     volumes:
-      - ${PWD}:/app:delegated
+      - .:/app:delegated
     working_dir: /app/frontend
 
   bot:
-    build:
-      dockerfile: Dockerfile
-      context: .
+    <<: *app-base
     command: make docker-run-bot
-    environment:
-      - MODE=dev
-      - DEBUG=true
-      - PYTHONUNBUFFERED=1
-      - PYTHONWARNINGS=ignore
-      - POSTGRES_DB=nes_club
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=postgres
-      - REDIS_DB=0
-      - REDIS_HOST=redis
-    restart: always
-    volumes:
-      - ${PWD}:/app:delegated
-    depends_on:
-      - club_app
-      - postgres
-      - redis
+    restart: on-failure
 
   helpdeskbot:
-    build:
-      dockerfile: Dockerfile
-      context: .
+    <<: *app-base
     command: make docker-run-helpdeskbot
-    environment:
-      - MODE=dev
-      - DEBUG=true
-      - PYTHONUNBUFFERED=1
-      - PYTHONWARNINGS=ignore
-      - POSTGRES_DB=nes_club
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=postgres
-      - REDIS_DB=0
-      - REDIS_HOST=redis
-    restart: always
-    volumes:
-      - ${PWD}:/app:delegated
-    depends_on:
-      - club_app
-      - postgres
-      - redis
+    restart: on-failure
+
+volumes:
+  postgres_data:

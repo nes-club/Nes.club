@@ -38,7 +38,4 @@ def grant_long_membership(user: User) -> None:
     if user.membership_expires_at is None or user.membership_expires_at < target_expires_at:
         user.membership_expires_at = target_expires_at
 
-    if user.membership_platform_type == User.MEMBERSHIP_PLATFORM_PATREON:
-        user.membership_platform_type = User.MEMBERSHIP_PLATFORM_DIRECT
-
     user.save()

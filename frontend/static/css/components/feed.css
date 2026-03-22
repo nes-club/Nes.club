@@ -83,10 +83,15 @@
                 padding: 5px 10px;
             }
 
-            .feed-sidebar-menu a:hover,
+            .feed-sidebar-menu a:hover {
+                color: var(--nes-red);
+                background-color: var(--nes-blue-tint);
+                border-radius: 6px;
+            }
+
             .feed-sidebar-menu-selected {
-                color: var(--opposite-text-color);
-                background-color: var(--opposite-bg-color);
+                color: var(--nes-blue);
+                font-weight: 600;
             }
 
             .feed-sidebar-menu-small {

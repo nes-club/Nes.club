@@ -102,6 +102,30 @@
                 {% if form.avatar.errors %}<span class="form-row-errors">{{ form.avatar.errors }}</span>{% endif %}
             </div>
 
+            <div class="block-header">🎓<br>РЭШ</div>
+
+            <div class="block-description">
+                Расскажите о вашей связи с РЭШ.
+            </div>
+
+            <div class="clearfix50"></div>
+
+            <div class="form-row">
+                <label for="{{ form.year_of_graduation.id_for_label }}" class="form-label">
+                    {{ form.year_of_graduation.label }}
+                </label>
+                {{ form.year_of_graduation }}
+                {% if form.year_of_graduation.errors %}<span class="form-row-errors">{{ form.year_of_graduation.errors }}</span>{% endif %}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ form.faculty.id_for_label }}" class="form-label">
+                    {{ form.faculty.label }}
+                </label>
+                {{ form.faculty }}
+                {% if form.faculty.errors %}<span class="form-row-errors">{{ form.faculty.errors }}</span>{% endif %}
+            </div>
+
             <div class="block-header">👨‍💻<br>Чем занимаетесь?</div>
 
             <div class="block-description">

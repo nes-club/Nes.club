@@ -44,7 +44,7 @@ def people(request):
                 "Фейсбук", "Гугл", "Амазон", "Нетфликс", "Майкрософт", "Микрософт"
             ])
 
-        if "same_city" in filters:
+        if "same_city" in filters and request.me.city:
             users = users.filter(city=request.me.city)
 
         if "activity" in filters:
@@ -100,7 +100,7 @@ def people(request):
         "users_total": users_total,
         "users_paginated": paginate(request, users, page_size=settings.PEOPLE_PAGE_SIZE),
         "tag_stat_groups": tag_stat_groups,
-        "max_tag_user_count": max(tag.user_count for tag in tags_with_stats),
+        "max_tag_user_count": max((tag.user_count for tag in tags_with_stats), default=1),
         "active_countries": active_countries,
         "map_stat_groups": map_stat_groups,
     })

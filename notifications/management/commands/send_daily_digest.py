@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = "Send daily digest"
 
     def add_arguments(self, parser):
-        parser.add_argument("--production", type=bool, required=False, default=False)
+        parser.add_argument("--production", action="store_true", required=False, default=False)
 
     def handle(self, *args, **options):
         # select daily subscribers
@@ -29,7 +29,6 @@ class Command(BaseCommand):
             subscribed_users = User.objects\
                 .filter(
                     email_digest_type=User.EMAIL_DIGEST_TYPE_DAILY,
-                    membership_expires_at__gte=datetime.utcnow(),
                     moderation_status=User.MODERATION_STATUS_APPROVED,
                     deleted_at__isnull=True,
                 )

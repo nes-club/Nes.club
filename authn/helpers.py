@@ -50,13 +50,6 @@ def check_user_permissions(request, **context):
     if any(request.path.startswith(prefix) for prefix in PATH_PREFIXES_WITHOUT_AUTH):
         return None
 
-    if not request.me.is_active_membership:
-        log.info("User membership expired. Showing access message...")
-        return render(request, "error.html", {
-            "title": "Доступ временно ограничен",
-            "message": "Ваш доступ истек. Напишите в поддержку: atishin@nes.ru.",
-        })
-
     if request.me.is_banned:
         log.info("User was banned. Redirecting to 'banned' page...")
         return redirect("banned")
@@ -91,7 +84,7 @@ def set_session_cookie(response, user, session):
     response.set_cookie(
         key="token",
         value=session.token,
-        expires=max(user.membership_expires_at, datetime.utcnow() + timedelta(days=30)),
+        expires=datetime.utcnow() + timedelta(days=365),
         httponly=True,
         secure=not settings.DEBUG,
     )

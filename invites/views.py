@@ -54,7 +54,7 @@ def activate_invite(request, invite_code):
         if request.me and request.me.is_moderator:
             return render(request, "error.html", {
                 "title": "Этот инвайт-код уже использован 🥲",
-                "message": f"Включен режим модератора. Пользователь: {invite.invited_user.slug}"
+                "message": f"Включен режим модератора. Пользователь: {invite.invited_user.slug if invite.invited_user else '(удалён)'}"
             })
 
         return render(request, "error.html", {

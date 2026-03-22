@@ -2,8 +2,8 @@ from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.db.models import Q
-from telegram import Update, ParseMode
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from bot.decorators import is_club_member
 from comments.models import Comment
@@ -14,7 +14,7 @@ TOP_TIMEDELTA = timedelta(days=3)
 
 
 @is_club_member
-def command_top(update: Update, context: CallbackContext) -> None:
+async def command_top(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # Top posts
     top_posts = Post.visible_objects()\
         .filter(published_at__gte=datetime.utcnow() - TOP_TIMEDELTA)\
@@ -43,7 +43,7 @@ def command_top(update: Update, context: CallbackContext) -> None:
         .order_by("-upvotes") \
         .first()
 
-    update.effective_chat.send_message(
+    await update.effective_chat.send_message(
         render_html_message(
             template="top.html",
             top_posts=top_posts,
@@ -51,6 +51,6 @@ def command_top(update: Update, context: CallbackContext) -> None:
             top_intros=top_intros,
             top_comment=top_comment,
         ),
-        parse_mode=ParseMode.HTML,
+        parse_mode="HTML",
         disable_web_page_preview=True,
     )

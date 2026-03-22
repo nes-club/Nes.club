@@ -22,7 +22,7 @@ class Command(BaseCommand):
     help = "Send weekly digest"
 
     def add_arguments(self, parser):
-        parser.add_argument("--production", nargs=1, type=bool, required=False, default=False)
+        parser.add_argument("--production", action="store_true", required=False, default=False)
 
     def handle(self, *args, **options):
         try:
@@ -66,7 +66,6 @@ class Command(BaseCommand):
                 email_digest_type=User.EMAIL_DIGEST_TYPE_NOPE
             )\
             .filter(
-                membership_expires_at__gte=datetime.utcnow() - timedelta(days=30),
                 moderation_status=User.MODERATION_STATUS_APPROVED,
                 telegram_id__isnull=False,
             )
@@ -84,14 +83,13 @@ class Command(BaseCommand):
                         include_unsubscribe=True,
                     ),
                     disable_preview=False,
-                    parse_mode=telegram.ParseMode.HTML,
+                    parse_mode="HTML",
                 )
 
         # sending emails
         email_subscribers = User.objects\
             .filter(
                 is_email_verified=True,
-                membership_expires_at__gte=datetime.utcnow() - timedelta(days=14),
                 moderation_status=User.MODERATION_STATUS_APPROVED,
             )\
             .exclude(email_digest_type=User.EMAIL_DIGEST_TYPE_NOPE)\
@@ -134,7 +132,7 @@ class Command(BaseCommand):
                     digest_intro=digest_intro
                 ),
                 disable_preview=False,
-                parse_mode=telegram.ParseMode.HTML,
+                parse_mode="HTML",
             )
 
             # flush digest intro and title for next time

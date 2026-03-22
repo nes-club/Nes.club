@@ -1,8 +1,7 @@
 from datetime import timedelta, datetime
 from urllib.parse import urlencode
 
-import pytz
-import telegram
+from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, Http404
@@ -92,7 +91,7 @@ def write_to_crew(request, crew):
                 reason=reason,
                 text=text[:10000].strip()
             ),
-            parse_mode=telegram.ParseMode.HTML,
+            parse_mode="HTML",
         )
 
         return render(request, "message.html", {
@@ -155,7 +154,7 @@ def generate_ical_invite(request):
     if not event_title or not event_date or not event_timezone:
         return HttpResponse("No date, tz or title")
 
-    event_date = datetime.fromisoformat(event_date).replace(tzinfo=pytz.timezone(event_timezone))
+    event_date = datetime.fromisoformat(event_date).replace(tzinfo=ZoneInfo(event_timezone))
 
     cal = Calendar()
     event = Event()

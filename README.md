@@ -119,6 +119,125 @@ TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
 - Dev login (admin): http://127.0.0.1:8000/godmode/dev_login/
 - Random user: http://127.0.0.1:8000/godmode/random_login/
 
+> ⚠️ Dev login endpoints (`/godmode/dev_login/`, `/godmode/random_login/`) are only active when `DEBUG=true`.
+> In production (`DEBUG=false`) they return 403 Access Denied.
+
+## 🚀 Deploying to Railway
+
+Railway deploys via the existing `Dockerfile` and `railway.json`. No docker-compose needed.
+
+### Services to create in Railway
+
+Create separate Railway services from the same GitHub repo, each with a different start command:
+
+| Service | Start command | Notes |
+|---------|--------------|-------|
+| `club_app` | `make docker-run-production` | Main web app, expose HTTP port |
+| `queue` | `make docker-run-queue` | Background task worker, no port |
+| `bot` _(optional)_ | `make docker-run-bot` | Telegram bot via webhook |
+| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` | Helpdesk Telegram bot |
+
+Also add **Postgres** and **Redis** as Railway plugins (Database → Add).
+
+### Required environment variables
+
+Set these in each Railway service (all services share the same set except where noted):
+
+```dotenv
+# Core
+MODE=production
+DEBUG=false
+SECRET_KEY=<generate a long random string>
+APP_HOST=https://<your-app>.railway.app
+
+# Database (from Railway Postgres plugin — copy from its "Variables" tab)
+POSTGRES_HOST=${{Postgres.PGHOST}}
+POSTGRES_DB=${{Postgres.PGDATABASE}}
+POSTGRES_USER=${{Postgres.PGUSER}}
+POSTGRES_PASSWORD=${{Postgres.PGPASSWORD}}
+POSTGRES_USE_POOLING=1
+
+# Redis (from Railway Redis plugin)
+REDIS_HOST=${{Redis.REDIS_HOST}}
+REDIS_DB=0
+
+# Email (SMTP)
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your@email.com
+EMAIL_HOST_PASSWORD=secret
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@your-domain.com>
+
+# Telegram (required for bots and notifications)
+TELEGRAM_TOKEN=
+TELEGRAM_BOT_URL=https://t.me/your_bot
+TELEGRAM_ADMIN_CHAT_ID=
+TELEGRAM_CLUB_CHANNEL_URL=
+TELEGRAM_CLUB_CHANNEL_ID=
+TELEGRAM_CLUB_CHAT_URL=
+TELEGRAM_CLUB_CHAT_ID=
+TELEGRAM_ONLINE_CHANNEL_URL=
+TELEGRAM_ONLINE_CHANNEL_ID=
+
+# Helpdesk bot
+TELEGRAM_HELP_DESK_BOT_TOKEN=
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID=
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
+
+# Optional
+SENTRY_DSN=
+MEDIA_UPLOAD_URL=
+MEDIA_UPLOAD_CODE=
+```
+
+### First deploy checklist
+
+1. Push code to GitHub
+2. Create Railway project → "Deploy from GitHub repo"
+3. Add Postgres and Redis plugins
+4. Set all environment variables listed above
+5. Set the **custom domain** in Railway → Settings → Domain, then update `APP_HOST`
+6. The `club_app` service will auto-run `migrate` and `update_achievements` on every deploy (part of `make docker-run-production`)
+
+### After first deploy — create the first admin
+
+There is no dev_login in production. To create the first admin user:
+
+```bash
+# Connect to your Railway service shell (Railway UI → service → Shell)
+python3 manage.py shell
+
+# In the shell:
+from users.models.user import User
+from datetime import datetime, timedelta
+u = User.objects.create(
+    slug="admin",
+    email="your@email.com",
+    full_name="Your Name",
+    moderation_status="approved",
+    roles=["god"],
+    membership_started_at=datetime.utcnow(),
+    membership_expires_at=datetime.utcnow() + timedelta(days=365*10),
+    balance=10000,
+    is_email_verified=True,
+)
+```
+
+Then log in via `/auth/login/` using the email you set.
+
+### Production vs dev differences
+
+| | Dev (local) | Production (Railway) |
+|---|---|---|
+| Server | Django dev server | Gunicorn + 5 Uvicorn workers |
+| Port | 8000 | `$PORT` (Railway-assigned) |
+| `DEBUG` | `true` | `false` |
+| Dev login | ✅ available | ❌ returns 403 |
+| Webpack | runs as a separate container | built into the Docker image at build time |
+| Database | local postgres container | Railway Postgres plugin |
+| Static files | served by Django dev server | copied to `/tmp/static`, served by Gunicorn |
+| Telegram bots | polling mode | webhook mode (requires public HTTPS domain) |
+
 ## 🧱 Architecture overview (3 levels deep)
 
 ### Level 1 — top‑level modules

@@ -2,22 +2,22 @@ from datetime import timedelta, datetime
 from random import randint
 
 from django.conf import settings
-from telegram import Update, ParseMode
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from common.flat_earth import parse_horoscope
 from notifications.telegram.common import render_html_message
 from posts.models.post import Post
 
 
-def command_horo(update: Update, context: CallbackContext) -> None:
+async def command_horo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     horoscope = parse_horoscope()
-    update.effective_chat.send_message(
+    await update.effective_chat.send_message(
         "Сегодня {club_day} день от старта сообщества, {phase_sign}\n\n{phase_description}".format(**horoscope)
     )
 
 
-def command_random(update: Update, context: CallbackContext) -> None:
+async def command_random(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     post = None
     attempt = 0
 
@@ -34,8 +34,8 @@ def command_random(update: Update, context: CallbackContext) -> None:
             .order_by("?") \
             .first()
 
-    update.effective_chat.send_message(
+    await update.effective_chat.send_message(
         render_html_message("channel_post_announce.html", post=post),
-        parse_mode=ParseMode.HTML,
+        parse_mode="HTML",
         disable_web_page_preview=True,
     )

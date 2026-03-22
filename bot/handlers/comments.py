@@ -2,8 +2,8 @@ import logging
 
 from django.urls import reverse
 from django_q.tasks import async_task
-from telegram import Update, ParseMode
-from telegram.ext import CallbackContext
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from bot.config import MIN_COMMENT_LEN, SKIP_COMMANDS, COMMENT_EMOJI_RE, POST_EMOJI_RE
 from bot.handlers.common import get_club_user, get_club_comment, get_club_post
@@ -20,7 +20,7 @@ from search.models import SearchIndex
 log = logging.getLogger(__name__)
 
 
-def comment(update: Update, context: CallbackContext) -> None:
+async def comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     log.info("Comment handler triggered")
 
     if not update.message or not update.message.reply_to_message:
@@ -40,10 +40,10 @@ def comment(update: Update, context: CallbackContext) -> None:
     log.info("Original message start: %s", reply_text_start)
 
     if COMMENT_EMOJI_RE.match(reply_text_start):
-        return reply_to_comment(update, context)
+        return await reply_to_comment(update, context)
 
     if POST_EMOJI_RE.match(reply_text_start):
-        return comment_to_post(update, context)
+        return await comment_to_post(update, context)
 
     # skip normal replies
     log.info("Skipping...")
@@ -51,28 +51,28 @@ def comment(update: Update, context: CallbackContext) -> None:
 
 
 @is_club_member
-def reply_to_comment(update: Update, context: CallbackContext) -> None:
+async def reply_to_comment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     log.info("Reply_to_comment handler triggered")
 
-    user = get_club_user(update)
+    user = await get_club_user(update)
     if not user:
         log.info("User not found")
         return None
 
-    comment = get_club_comment(update)
+    comment = await get_club_comment(update)
     if not comment:
         log.info("Original comment not found. Skipping.")
         return None
 
     if is_comment_rate_limit_exceeded(comment.post, user):
-        update.message.reply_text(
+        await update.message.reply_text(
             f"🙅‍♂️ Извините, вы комментировали слишком часто и достигли дневного лимита"
         )
         return None
 
     text = update.message.text or update.message.caption
     if not text:
-        update.message.reply_text(
+        await update.message.reply_text(
             f"😣 Сорян, я пока умею только в текстовые реплаи"
         )
         return None
@@ -114,9 +114,9 @@ def reply_to_comment(update: Update, context: CallbackContext) -> None:
         "comment_id": reply.id
     })
 
-    update.message.reply_text(
+    await update.message.reply_text(
         f"➜ <a href=\"{new_comment_url}\">Отвечено</a> 👍",
-        parse_mode=ParseMode.HTML,
+        parse_mode="HTML",
         disable_web_page_preview=True
     )
 
@@ -124,27 +124,27 @@ def reply_to_comment(update: Update, context: CallbackContext) -> None:
 
 
 @is_club_member
-def comment_to_post(update: Update, context: CallbackContext) -> None:
+async def comment_to_post(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     log.info("Reply_to_post handler triggered")
 
-    user = get_club_user(update)
+    user = await get_club_user(update)
     if not user:
         log.info("User not found")
         return None
 
-    post = get_club_post(update)
+    post = await get_club_post(update)
     if not post or post.type in [Post.TYPE_BATTLE, Post.TYPE_WEEKLY_DIGEST]:
         return None
 
     if is_comment_rate_limit_exceeded(post, user):
-        update.message.reply_text(
+        await update.message.reply_text(
             f"🙅‍♂️ Извините, вы комментировали слишком часто и достигли дневного лимита"
         )
         return None
 
     text = update.message.text or update.message.caption
     if not text:
-        update.message.reply_text(
+        await update.message.reply_text(
             f"😣 Сорян, я пока умею только в текстовые реплаи"
         )
         return None
@@ -154,7 +154,7 @@ def comment_to_post(update: Update, context: CallbackContext) -> None:
             return None
 
     if len(text) < MIN_COMMENT_LEN:
-        update.message.reply_text(
+        await update.message.reply_text(
             f"😋 Твой коммент слишком короткий. Не буду постить его в сообщество, пускай остается в чате"
         )
         return None
@@ -186,9 +186,9 @@ def comment_to_post(update: Update, context: CallbackContext) -> None:
         "comment_id": reply.id
     })
 
-    update.message.reply_text(
+    await update.message.reply_text(
         f"➜ <a href=\"{new_comment_url}\">Отвечено</a> 👍",
-        parse_mode=ParseMode.HTML,
+        parse_mode="HTML",
         disable_web_page_preview=True
     )
 

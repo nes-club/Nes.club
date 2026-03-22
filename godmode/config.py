@@ -30,7 +30,7 @@ from godmode.pages.mass_email import mass_email
 from godmode.pages.moderation import moderation
 from godmode.pages.sunday_posts import sunday_posts
 from invites.models import Invite
-from misc.models import NetworkGroup, ProTip
+from misc.models import NetworkGroup
 from posts.models.linked import LinkedPost
 from posts.models.post import Post
 from rooms.models import Room
@@ -504,22 +504,6 @@ ADMIN = ClubAdmin(
             title="Разное",
             icon="😉",
             models=[
-                ClubAdminModel(
-                    model=ProTip,
-                    title="Про-типсы",
-                    icon="💡",
-                    name="pro_tips",
-                    list_roles={User.ROLE_MODERATOR, User.ROLE_GOD, User.ROLE_CURATOR},
-                    edit_roles={User.ROLE_MODERATOR, User.ROLE_GOD, User.ROLE_CURATOR},
-                    create_roles={User.ROLE_MODERATOR, User.ROLE_GOD, User.ROLE_CURATOR},
-                    list_fields=[
-                        "title",
-                        "text",
-                        "created_at",
-                        "updated_at",
-                        "is_visible",
-                    ]
-                ),
                 ClubAdminModel(
                     model=DataRequests,
                     title="Запросы данных",

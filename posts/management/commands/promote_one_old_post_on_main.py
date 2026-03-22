@@ -32,6 +32,10 @@ class Command(BaseCommand):
             .order_by("-upvotes")\
             .first()
 
+        if not random_good_post:
+            self.stdout.write("No suitable post found. Skipping")
+            return
+
         self.stdout.write(f"Promoting post '{random_good_post.title}'")
 
         random_good_post.last_activity_at = datetime.utcnow()

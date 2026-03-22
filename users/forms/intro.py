@@ -51,6 +51,19 @@ class UserInitialIntroForm(ModelForm):
         max_length=1024,
         widget=forms.Textarea(attrs={"maxlength": 1024}),
     )
+    year_of_graduation = forms.IntegerField(
+        label="Год окончания РЭШ",
+        required=True,
+        min_value=1992,
+        max_value=2100,
+        widget=forms.NumberInput(attrs={"placeholder": "2015"}),
+    )
+    faculty = forms.CharField(
+        label="Программа / факультет",
+        required=True,
+        max_length=128,
+        widget=forms.TextInput(attrs={"placeholder": "Например: Магистр экономики"}),
+    )
     company = forms.CharField(
         label="Компания",
         required=True,
@@ -95,6 +108,8 @@ class UserInitialIntroForm(ModelForm):
             "city",
             "country",
             "bio",
+            "year_of_graduation",
+            "faculty",
             "email_digest_type",
         ]
 

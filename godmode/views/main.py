@@ -259,8 +259,13 @@ def godmode_action(request, model_name, item_id, action_code):
         admin_action=admin_action
     )
     if request.method == "GET":
-        return admin_action.get(request, item, **context)
+        if admin_action.get:
+            return admin_action.get(request, item, **context)
+        # POST-only actions show a confirmation page on GET
+        return render(request, "godmode/confirm.html", {**context, "item": item})
     elif request.method == "POST":
+        if not admin_action.post:
+            raise Http404()
         return admin_action.post(request, item, **context)
     else:
         raise Http404()

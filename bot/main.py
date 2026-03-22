@@ -11,96 +11,86 @@ django.setup()
 # THE END
 
 from django.conf import settings
-from telegram import Update, ParseMode
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext, Filters, \
-    CallbackQueryHandler
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
 from bot.cache import cached_telegram_users
 from bot.config import WELCOME_MESSAGE, BOT_MENTION_RE, ANONYMOUS_MESSAGE
-from bot.handlers import moderation, comments, upvotes, auth, whois, fun, top, posts, llm
+from bot.handlers import moderation, comments, upvotes, auth, whois, fun, top, posts
 
 log = logging.getLogger(__name__)
 
 
-def command_help(update: Update, context: CallbackContext) -> None:
-    update.effective_chat.send_message(
+async def command_help(update: Update, context) -> None:
+    await update.effective_chat.send_message(
         WELCOME_MESSAGE,
-        parse_mode=ParseMode.HTML
+        parse_mode="HTML"
     )
 
 
-def private_message(update: Update, context: CallbackContext) -> None:
+async def private_message(update: Update, context) -> None:
     log.info("Private message handler triggered")
 
     club_users = cached_telegram_users()
     if str(update.effective_user.id) not in set(club_users):
-        update.effective_chat.send_message(
+        await update.effective_chat.send_message(
             ANONYMOUS_MESSAGE,
-            parse_mode=ParseMode.HTML
+            parse_mode="HTML"
         )
-    else:
-        return llm.llm_response(update, context)
 
 
 def main() -> None:
-    # Initialize telegram
-    updater = Updater(settings.TELEGRAM_TOKEN, use_context=True)
+    if not settings.TELEGRAM_TOKEN:
+        log.warning("TELEGRAM_TOKEN is not set, bot is disabled")
+        return
 
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
+    # Initialize telegram
+    application = Application.builder().token(settings.TELEGRAM_TOKEN).build()
 
     # Admin callbacks
-    dispatcher.add_handler(CallbackQueryHandler(moderation.approve_post, pattern=r"^approve_post:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(moderation.forgive_post, pattern=r"^forgive_post:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(moderation.reject_post, pattern=r"^reject_post.+"))
-    dispatcher.add_handler(CallbackQueryHandler(moderation.approve_user_profile, pattern=r"^approve_user:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(moderation.reject_user_profile, pattern=r"^reject_user.+"))
+    application.add_handler(CallbackQueryHandler(moderation.approve_post, pattern=r"^approve_post:.+"))
+    application.add_handler(CallbackQueryHandler(moderation.forgive_post, pattern=r"^forgive_post:.+"))
+    application.add_handler(CallbackQueryHandler(moderation.reject_post, pattern=r"^reject_post.+"))
+    application.add_handler(CallbackQueryHandler(moderation.approve_user_profile, pattern=r"^approve_user:.+"))
+    application.add_handler(CallbackQueryHandler(moderation.reject_user_profile, pattern=r"^reject_user.+"))
 
     # Commands and buttons
-    dispatcher.add_handler(CommandHandler("help", command_help))
-    dispatcher.add_handler(CommandHandler("horo", fun.command_horo))
-    dispatcher.add_handler(CommandHandler("random", fun.command_random))
-    dispatcher.add_handler(CommandHandler("top", top.command_top))
-    dispatcher.add_handler(CommandHandler("whois", whois.command_whois))
-    dispatcher.add_handler(CallbackQueryHandler(posts.subscribe, pattern=r"^subscribe:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(posts.unsubscribe, pattern=r"^unsubscribe:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(upvotes.upvote_post, pattern=r"^upvote_post:.+"))
-    dispatcher.add_handler(CallbackQueryHandler(upvotes.upvote_comment, pattern=r"^upvote_comment:.+"))
-    dispatcher.add_handler(
-        MessageHandler(Filters.reply & Filters.regex(r"^\+[+\d ]*$"), upvotes.upvote)
-    )
-
-    # AI
-    dispatcher.add_handler(
-        MessageHandler(Filters.text & Filters.regex(BOT_MENTION_RE), llm.llm_response)
+    application.add_handler(CommandHandler("help", command_help))
+    application.add_handler(CommandHandler("horo", fun.command_horo))
+    application.add_handler(CommandHandler("random", fun.command_random))
+    application.add_handler(CommandHandler("top", top.command_top))
+    application.add_handler(CommandHandler("whois", whois.command_whois))
+    application.add_handler(CallbackQueryHandler(posts.subscribe, pattern=r"^subscribe:.+"))
+    application.add_handler(CallbackQueryHandler(posts.unsubscribe, pattern=r"^unsubscribe:.+"))
+    application.add_handler(CallbackQueryHandler(upvotes.upvote_post, pattern=r"^upvote_post:.+"))
+    application.add_handler(CallbackQueryHandler(upvotes.upvote_comment, pattern=r"^upvote_comment:.+"))
+    application.add_handler(
+        MessageHandler(filters.REPLY & filters.Regex(r"^\+[+\d ]*$"), upvotes.upvote)
     )
 
     # Handle comments to posts and replies
-    dispatcher.add_handler(
-        MessageHandler(Filters.reply & ~Filters.chat(int(settings.TELEGRAM_ADMIN_CHAT_ID)), comments.comment)
+    application.add_handler(
+        MessageHandler(filters.REPLY & ~filters.Chat(chat_id=int(settings.TELEGRAM_ADMIN_CHAT_ID)), comments.comment)
     )
 
     # Private chat with bot
-    dispatcher.add_handler(CommandHandler("start", auth.command_auth, Filters.private))
-    dispatcher.add_handler(CommandHandler("auth", auth.command_auth, Filters.private))
-    dispatcher.add_handler(MessageHandler(Filters.forwarded & Filters.private, whois.command_whois))
-    dispatcher.add_handler(MessageHandler(Filters.private, private_message))
+    application.add_handler(CommandHandler("start", auth.command_auth, filters=filters.ChatType.PRIVATE))
+    application.add_handler(CommandHandler("auth", auth.command_auth, filters=filters.ChatType.PRIVATE))
+    application.add_handler(MessageHandler(filters.FORWARDED & filters.ChatType.PRIVATE, whois.command_whois))
+    application.add_handler(MessageHandler(filters.ChatType.PRIVATE, private_message))
 
     # Start the bot
     if settings.DEBUG:
-        updater.start_polling()
+        application.run_polling()
         # ^ polling is useful for development since you don't need to expose webhook endpoints
     else:
-        updater.start_webhook(
+        log.info(f"Set webhook: {settings.TELEGRAM_BOT_WEBHOOK_URL + settings.TELEGRAM_TOKEN}")
+        application.run_webhook(
             listen=settings.TELEGRAM_BOT_WEBHOOK_HOST,
             port=settings.TELEGRAM_BOT_WEBHOOK_PORT,
             url_path=settings.TELEGRAM_TOKEN,
+            webhook_url=settings.TELEGRAM_BOT_WEBHOOK_URL + settings.TELEGRAM_TOKEN,
         )
-        log.info(f"Set webhook: {settings.TELEGRAM_BOT_WEBHOOK_URL + settings.TELEGRAM_TOKEN}")
-        updater.bot.set_webhook(settings.TELEGRAM_BOT_WEBHOOK_URL + settings.TELEGRAM_TOKEN)
-
-    # Wait all threads
-    updater.idle()
 
 
 if __name__ == '__main__':

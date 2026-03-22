@@ -68,7 +68,7 @@ class Comment(models.Model):
             "id": str(self.id),
             "url": f"{settings.APP_HOST}{self.get_absolute_url()}",
             "text": self.text,
-            "author": self.author.to_dict(),
+            "author": self.author.to_dict() if self.author else None,
             "reply_to_id": self.reply_to_id,
             "upvotes": self.upvotes,
             "created_at": self.created_at.isoformat(),

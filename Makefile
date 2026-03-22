@@ -12,6 +12,9 @@ run-queue:  ## Runs task broker
 	pipenv run python manage.py qcluster
 
 docker-run-queue:
+	python3 ./utils/wait_for_postgres.py
+	python3 ./utils/wait_for_migrations.py
+	python3 manage.py setup_schedules
 	python3 manage.py qcluster
 
 run-bot:  ## Runs telegram bot
@@ -27,10 +30,6 @@ docker-run-helpdeskbot:
 	python3 ./utils/wait_for_migrations.py
 	python3 helpdeskbot/main.py
 
-docker-run-cron:
-	env >> /etc/environment
-	cron -f -l 2
-
 run-uvicorn:  ## Runs uvicorn (ASGI) server in managed mode
 	pipenv run uvicorn --fd 0 --lifespan off club.asgi:application
 
@@ -42,7 +41,7 @@ docker-run-dev:  ## Runs dev server in docker
 
 docker-run-production: docker-migrate docker-update-achievements
 	cp -r /app/frontend/static /tmp/
-	gunicorn club.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8814 --timeout 60 --max-requests 1500 --max-requests-jitter 300 --capture-output --log-level debug --access-logfile - --error-logfile -
+	gunicorn club.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:${PORT:-8814} --timeout 60 --max-requests 1500 --max-requests-jitter 300 --capture-output --log-level debug --access-logfile - --error-logfile -
 
 docker-update-achievements:
 	python3 manage.py update_achievements

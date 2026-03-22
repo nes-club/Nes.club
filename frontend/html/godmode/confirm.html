@@ -1,0 +1,27 @@
+{% extends "godmode/layout.html" %}
+{% load static %}
+
+{% block title %}
+    {{ admin_action.title }} — {{ block.super }}
+{% endblock %}
+
+{% block godmode_content %}
+    <div class="godmode-action">
+        <div class="godmode-header">
+            <span class="godmode-icon">{{ admin_model.icon }}</span>
+            <a href="{% url "godmode_list_model" admin_model.name %}" class="godmode-title">{{ admin_model.title }}</a>
+            <span>→</span>
+            <span class="godmode-title">{{ admin_action.title }}</span>
+        </div>
+
+        <div class="godmode-action-form">
+            <p>Выполнить действие <strong>{{ admin_action.title }}</strong>?</p>
+            <form action="." method="post">
+                {% csrf_token %}
+                <button type="submit" class="button">Да, выполнить</button>
+                &nbsp;
+                <a href="javascript:history.back()" class="button button-grey">Отмена</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

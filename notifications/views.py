@@ -143,6 +143,8 @@ def is_valid_telegram_data(data, bot_token):
     check_list = ['{}={}'.format(k, v) for k, v in data.items()]
     check_string = '\n'.join(sorted(check_list))
 
+    if not bot_token:
+        return False
     secret_key = hashlib.sha256(bot_token.encode()).digest()
     hmac_hash = hmac.new(
         secret_key,
