@@ -42,6 +42,7 @@ docker-run-dev:  ## Runs dev server in docker
 docker-run-production: docker-migrate docker-update-achievements
 	python3 manage.py collectstatic --noinput
 	@if [ -n "$$INITIAL_ADMIN_EMAIL" ]; then python3 manage.py create_admin --email "$$INITIAL_ADMIN_EMAIL" --slug "$$INITIAL_ADMIN_SLUG" --name "$$INITIAL_ADMIN_NAME"; fi
+	@if [ -n "$$CLEAR_AUTH_EMAIL" ]; then python3 manage.py clear_auth_codes --email "$$CLEAR_AUTH_EMAIL"; fi
 	gunicorn club.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:$${PORT:-8814} --timeout 60 --max-requests 1500 --max-requests-jitter 300 --capture-output --log-level debug --access-logfile - --error-logfile -
 
 docker-update-achievements:
