@@ -238,6 +238,19 @@ python3 manage.py check
 python3 manage.py showmigrations
 ```
 
+### Static files and Cloudflare
+
+Static files (CSS, JS, images) are served by **WhiteNoise** — a library that lets Gunicorn serve static files without Nginx. On every deploy `collectstatic` runs automatically and collects files into `staticfiles/` with content hashes in filenames.
+
+For production, put **Cloudflare** in front of Railway so static files are cached at the edge:
+
+1. Add your domain to Cloudflare (free plan)
+2. Create a CNAME record pointing to your Railway domain (with **Proxied** enabled)
+3. Update `APP_HOST` in Railway Variables to your custom domain
+4. In Cloudflare → Rules → Cache Rules: cache `/static/*` with 1-year TTL
+
+Full setup guide: [docs/cloudflare-setup.md](docs/cloudflare-setup.md)
+
 ### After first deploy — create the first admin
 
 There is no dev_login in production. To create the first admin user:

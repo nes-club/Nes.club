@@ -55,10 +55,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.middleware.security.SecurityMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -149,7 +150,9 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "frontend/static")]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Task queue (django-q)
 
@@ -230,6 +233,7 @@ GDPR_DELETE_TIMEDELTA = timedelta(hours=2 * 24)
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [APP_HOST] if APP_HOST else []
 
 MEDIA_UPLOAD_URL = os.getenv("MEDIA_UPLOAD_URL", "")
 MEDIA_UPLOAD_CODE = os.getenv("MEDIA_UPLOAD_CODE")
