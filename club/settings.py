@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "misc.apps.MiscConfig",
     "godmode.apps.GodmodeConfig",
     "invites.apps.InvitesConfig",
+    "anymail",
     "clickers.apps.ClickersConfig",
     "simple_history",
     "django_q",
