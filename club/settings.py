@@ -158,6 +158,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 REDIS_HOST = os.getenv("REDIS_HOST") or "localhost"
 REDIS_PORT = os.getenv("REDIS_PORT") or 6379
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") or None
 Q_CLUSTER = {
     "name": "nes_club",
     "workers": 4,
@@ -169,6 +170,7 @@ Q_CLUSTER = {
     "redis": {
         "host": REDIS_HOST,
         "port": REDIS_PORT,
+        "password": REDIS_PASSWORD,
         "db": os.getenv("REDIS_DB") or 0
     }
 }
@@ -178,7 +180,7 @@ Q_CLUSTER = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
+        "LOCATION": f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/1" if REDIS_PASSWORD else f"redis://{REDIS_HOST}:{REDIS_PORT}/1",
         "TIMEOUT": 3600,  # 5 hours max
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
