@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "544f93070e544d391c8c75ce663f592e924ff0923f158a56c9365701abe65b12"
+            "sha256": "8df07236c19e48b517d7c424164af2a84de80d5d79b733d63ede871269593c36"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -491,6 +491,17 @@
             "index": "pypi",
             "markers": "python_version >= '3.10'",
             "version": "==5.1.13"
+        },
+        "django-anymail": {
+            "extras": [
+                "brevo"
+            ],
+            "hashes": [
+                "sha256:98e5575bcff231952a92117b7d0a4dd37fab582333a343de302d415a31dc72b1",
+                "sha256:ca42e52da62d2c96ce92412f9d68ef6d2067d96a384096b6e932d6a247e9fd61"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==14.0"
         },
         "django-picklefield": {
             "hashes": [
