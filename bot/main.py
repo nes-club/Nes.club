@@ -19,6 +19,8 @@ from bot.config import WELCOME_MESSAGE, BOT_MENTION_RE, ANONYMOUS_MESSAGE
 from bot.handlers import moderation, comments, upvotes, auth, whois, fun, top, posts
 
 log = logging.getLogger(__name__)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 async def command_help(update: Update, context) -> None:

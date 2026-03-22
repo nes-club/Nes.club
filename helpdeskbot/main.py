@@ -19,6 +19,8 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, filters, MessageHandler
 
 log = logging.getLogger(__name__)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 async def on_help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
