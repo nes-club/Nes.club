@@ -88,7 +88,7 @@ def main() -> None:
         application.run_webhook(
             listen=settings.TELEGRAM_BOT_WEBHOOK_HOST,
             port=settings.TELEGRAM_BOT_WEBHOOK_PORT,
-            url_path=settings.TELEGRAM_TOKEN,
+            url_path=f"telegram/webhook/{settings.TELEGRAM_TOKEN}",
             webhook_url=settings.TELEGRAM_BOT_WEBHOOK_URL + settings.TELEGRAM_TOKEN,
         )
 

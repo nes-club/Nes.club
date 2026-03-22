@@ -67,7 +67,7 @@ def main() -> None:
         application.run_webhook(
             listen=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_HOST,
             port=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_PORT,
-            url_path=config.TELEGRAM_HELP_DESK_BOT_TOKEN,
+            url_path=f"telegram/helpdeskbot/webhook/{config.TELEGRAM_HELP_DESK_BOT_TOKEN}",
             webhook_url=config.TELEGRAM_HELP_DESK_BOT_WEBHOOK_URL + config.TELEGRAM_HELP_DESK_BOT_TOKEN,
         )
 
