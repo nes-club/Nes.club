@@ -80,3 +80,4 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 который собирает все CSS/JS/картинки в папку `staticfiles/` с хэшами в именах.
 
 Cloudflare кэширует эти файлы на год — Railway почти не получает запросов к статике.
+
