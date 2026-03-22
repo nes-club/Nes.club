@@ -165,19 +165,20 @@ docker compose -f docker-compose.production.yml up -d --build
 
 Railway deploys directly from the `Dockerfile` — no docker-compose needed. A `railway.json` is included in the repo root.
 
-**Services to create** (one per Railway service, all using the same Dockerfile):
+**Start command mechanism:** `railway.json` runs `bash start.sh`. The script reads the `SERVICE_CMD` env var and runs `make $SERVICE_CMD`. Set `SERVICE_CMD` per service:
 
-| Service | Start command |
+| Service | `SERVICE_CMD` |
 |---------|--------------|
-| `club_app` | `make docker-run-production` |
-| `queue` | `make docker-run-queue` |
-| `bot` _(optional)_ | `make docker-run-bot` |
-| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` |
+| `club_app` | `docker-run-production` |
+| `queue` | `docker-run-queue` |
+| `bot` _(optional)_ | `docker-run-bot` |
+| `helpdeskbot` _(optional)_ | `docker-run-helpdeskbot` |
 
 **Required env vars for Railway** (set `DEBUG=false` — this disables all dev login endpoints):
 ```
 MODE=production
 DEBUG=false
+SERVICE_CMD=docker-run-production
 SECRET_KEY=<long random string>
 APP_HOST=https://<your-app>.railway.app
 POSTGRES_HOST=${{Postgres.PGHOST}}
@@ -185,8 +186,40 @@ POSTGRES_DB=${{Postgres.PGDATABASE}}
 POSTGRES_USER=${{Postgres.PGUSER}}
 POSTGRES_PASSWORD=${{Postgres.PGPASSWORD}}
 REDIS_HOST=${{Redis.REDISHOST}}
-EMAIL_HOST / EMAIL_PORT / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD
-TELEGRAM_TOKEN / TELEGRAM_ADMIN_CHAT_ID / ...
+REDIS_PASSWORD=${{Redis.REDISPASSWORD}}
+```
+
+**Email (Railway блокирует исходящий SMTP — используй HTTP API):**
+```
+EMAIL_BACKEND=anymail.backends.brevo.EmailBackend
+BREVO_API_KEY=<ключ из Brevo → My account → SMTP & API → API Keys>
+DEFAULT_FROM_EMAIL=Название <no-reply@yourdomain.com>
+```
+
+**Telegram (сервис `club_app`):**
+```
+TELEGRAM_TOKEN=<токен от @BotFather>
+TELEGRAM_BOT_URL=https://t.me/<username_бота>
+TELEGRAM_ADMIN_CHAT_ID=<ID чата модераторов>
+TELEGRAM_CLUB_CHANNEL_ID=<ID основного канала>
+TELEGRAM_CLUB_CHAT_ID=<ID основного чата>
+```
+
+**Telegram (сервис `bot`):**
+```
+SERVICE_CMD=docker-run-bot
+TELEGRAM_TOKEN=<тот же токен>
+TELEGRAM_BOT_WEBHOOK_HOST_URL=https://<bot-service-url>.railway.app
+# + все остальные TELEGRAM_* переменные
+```
+
+**Telegram (сервис `helpdeskbot`):**
+```
+SERVICE_CMD=docker-run-helpdeskbot
+TELEGRAM_HELP_DESK_BOT_TOKEN=<токен helpdeskbot>
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID=<ID канала вопросов>
+TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=<ID чата обсуждений>
+TELEGRAM_HELPDESK_WEBHOOK_HOST_URL=https://<helpdeskbot-service-url>.railway.app
 ```
 
 ⚠️ **Переменные не подтягиваются автоматически** — их нужно добавить вручную через Variables → Raw Editor. Если переменные не заданы, контейнер стартует молча и сразу падает с 502.
@@ -202,3 +235,8 @@ INITIAL_ADMIN_SLUG=admin
 INITIAL_ADMIN_NAME=Your Name
 ```
 The `create_admin` management command runs on startup, creates the user, and is idempotent (safe to re-run). Login via `/auth/login/` with that email — one-time code sent to inbox. Management command: `users/management/commands/create_admin.py`.
+
+**Auth rate limit reset** — if login codes are exhausted, add this var and redeploy `club_app`, then remove:
+```
+CLEAR_AUTH_EMAIL=your@email.com
+```
