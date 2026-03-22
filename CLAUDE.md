@@ -180,11 +180,18 @@ MODE=production
 DEBUG=false
 SECRET_KEY=<long random string>
 APP_HOST=https://<your-app>.railway.app
-POSTGRES_HOST / POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD  ← from Railway Postgres plugin
-REDIS_HOST  ← from Railway Redis plugin
+POSTGRES_HOST=${{Postgres.PGHOST}}
+POSTGRES_DB=${{Postgres.PGDATABASE}}
+POSTGRES_USER=${{Postgres.PGUSER}}
+POSTGRES_PASSWORD=${{Postgres.PGPASSWORD}}
+REDIS_HOST=${{Redis.REDISHOST}}
 EMAIL_HOST / EMAIL_PORT / EMAIL_HOST_USER / EMAIL_HOST_PASSWORD
 TELEGRAM_TOKEN / TELEGRAM_ADMIN_CHAT_ID / ...
 ```
+
+⚠️ **Переменные не подтягиваются автоматически** — их нужно добавить вручную через Variables → Raw Editor. Если переменные не заданы, контейнер стартует молча и сразу падает с 502.
+
+**Debugging 502**: Deploy Logs → если после "Starting Container" пусто → переменные не заданы. Добавь переменные, Railway автоматически передеплоит.
 
 **Dev login protection:** `authn/views/debug.py` checks `if not (settings.DEBUG or settings.TESTS_RUN)` before allowing dev/random login. Setting `DEBUG=false` makes these endpoints return 403 Access Denied.
 

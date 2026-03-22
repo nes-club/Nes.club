@@ -41,7 +41,7 @@ docker-run-dev:  ## Runs dev server in docker
 
 docker-run-production: docker-migrate docker-update-achievements
 	cp -r /app/frontend/static /tmp/
-	gunicorn club.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:${PORT:-8814} --timeout 60 --max-requests 1500 --max-requests-jitter 300 --capture-output --log-level debug --access-logfile - --error-logfile -
+	gunicorn club.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:$${PORT:-8814} --timeout 60 --max-requests 1500 --max-requests-jitter 300 --capture-output --log-level debug --access-logfile - --error-logfile -
 
 docker-update-achievements:
 	python3 manage.py update_achievements
@@ -58,6 +58,7 @@ migrate:  ## Migrate database to the latest version
 	pipenv run python3 manage.py migrate
 
 docker-migrate:
+	python3 ./utils/wait_for_postgres.py
 	python3 manage.py migrate
 
 build-frontend:  ## Runs webpack

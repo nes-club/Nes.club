@@ -147,28 +147,31 @@ Set these in each Railway service (all services share the same set except where 
 # Core
 MODE=production
 DEBUG=false
-SECRET_KEY=<generate a long random string>
-APP_HOST=https://<your-app>.railway.app
+SECRET_KEY=<generate: python3 -c "import secrets; print(secrets.token_urlsafe(50))">
+APP_HOST=https://<your-app>.up.railway.app
+APP_NAME=Сообщество выпускников РЭШ
+APP_TITLE=Сообщество выпускников РЭШ
 
-# Database (from Railway Postgres plugin — copy from its "Variables" tab)
+# Database — используй Railway reference variables из Postgres плагина
 POSTGRES_HOST=${{Postgres.PGHOST}}
+POSTGRES_PORT=${{Postgres.PGPORT}}
 POSTGRES_DB=${{Postgres.PGDATABASE}}
 POSTGRES_USER=${{Postgres.PGUSER}}
 POSTGRES_PASSWORD=${{Postgres.PGPASSWORD}}
-POSTGRES_USE_POOLING=1
 
-# Redis (from Railway Redis plugin)
-REDIS_HOST=${{Redis.REDIS_HOST}}
+# Redis — из Redis плагина
+REDIS_HOST=${{Redis.REDISHOST}}
+REDIS_PORT=${{Redis.REDISPORT}}
 REDIS_DB=0
 
-# Email (SMTP)
-EMAIL_HOST=smtp.example.com
+# Email (SMTP) — без этого пользователи не смогут войти
+EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=your@email.com
-EMAIL_HOST_PASSWORD=secret
-DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@your-domain.com>
+EMAIL_HOST_PASSWORD=your_app_password
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@nes.ru>
 
-# Telegram (required for bots and notifications)
+# Telegram (опционально — боты не стартуют без токенов, веб-приложение работает)
 TELEGRAM_TOKEN=
 TELEGRAM_BOT_URL=https://t.me/your_bot
 TELEGRAM_ADMIN_CHAT_ID=
@@ -179,25 +182,61 @@ TELEGRAM_CLUB_CHAT_ID=
 TELEGRAM_ONLINE_CHANNEL_URL=
 TELEGRAM_ONLINE_CHANNEL_ID=
 
-# Helpdesk bot
+# Helpdesk bot (опционально)
 TELEGRAM_HELP_DESK_BOT_TOKEN=
 TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID=
 TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
 
-# Optional
-SENTRY_DSN=
+# Медиа (опционально — без этого аватарки не загружаются, приложение не падает)
+# Подробнее о вариантах: docs/media-storage.md
 MEDIA_UPLOAD_URL=
 MEDIA_UPLOAD_CODE=
+
+# OG-превью постов (опционально)
+OG_IMAGE_GENERATOR_URL=
+
+# Мониторинг (опционально)
+SENTRY_DSN=
 ```
 
 ### First deploy checklist
 
 1. Push code to GitHub
-2. Create Railway project → "Deploy from GitHub repo"
-3. Add Postgres and Redis plugins
-4. Set all environment variables listed above
-5. Set the **custom domain** in Railway → Settings → Domain, then update `APP_HOST`
-6. The `club_app` service will auto-run `migrate` and `update_achievements` on every deploy (part of `make docker-run-production`)
+2. Create Railway project → "Deploy from GitHub repo" → выбери ветку `master`
+3. Добавь **Postgres** и **Redis**: в проекте нажми `+ New` → `Database` → выбери тип
+4. **⚠️ Критически важно: добавь переменные окружения** — без них контейнер стартует но сразу падает с 502:
+   - Открой сервис → вкладка **Variables** → кнопка **Raw Editor**
+   - Вставь все переменные из раздела выше
+   - Railway автоматически передеплоит сервис после сохранения
+5. Установи **custom domain**: Settings → Networking → Generate Domain (или свой домен), затем обнови `APP_HOST`
+6. После первого деплоя `club_app` автоматически запустит `migrate` и `update_achievements`
+
+### Troubleshooting: 502 Bad Gateway
+
+**Симптом**: сайт открывается, но возвращает 502. Deploy Logs содержат только "Starting Container" и ничего больше.
+
+**Причина**: переменные окружения не заданы — Django/Gunicorn не может подключиться к БД и падает на старте до первого лога.
+
+**Решение**:
+1. Открой сервис → **Variables** → убедись что там **не "0 Variables"**
+2. Если пусто — добавь переменные через **Raw Editor** (см. раздел выше)
+3. После сохранения Railway автоматически передеплоит, в Deploy Logs появятся реальные логи Gunicorn
+
+**Проверка после деплоя**:
+```bash
+# Установи Railway CLI
+npm i -g @railway/cli
+railway login
+railway link  # выбери проект
+
+# Логи в реальном времени
+railway logs --service club_app
+
+# Django checks
+railway shell --service club_app
+python3 manage.py check
+python3 manage.py showmigrations
+```
 
 ### After first deploy — create the first admin
 
