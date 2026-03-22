@@ -33,7 +33,7 @@ class Invite(models.Model):
 
     @property
     def is_expired(self):
-        return self.expires_at < datetime.now()
+        return self.expires_at < datetime.utcnow()
 
     @property
     def is_used(self):

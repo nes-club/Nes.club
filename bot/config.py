@@ -23,5 +23,5 @@ MIN_COMMENT_LEN = 40
 SKIP_COMMANDS = ("/skip", "/Skip", "#skip", "#ignore")
 COMMENT_EMOJI_RE = re.compile(r"^💬.*")
 POST_EMOJI_RE = re.compile(r"^[📝🔗❓💡🏢🤜🤛🗺🗄🔥🏗🙋‍♀️].*")
-COMMENT_URL_RE = re.compile(r"https?://[^/]+/[a-zA-Z]+/.+?/#comment-([a-fA-F0-9\\-]+)")
+COMMENT_URL_RE = re.compile(r"https?://[^/]+/[a-zA-Z]+/.+?/#comment-([a-fA-F0-9-]+)")
 POST_URL_RE = re.compile(r"https?://[^/]+/[a-zA-Z]+/(.+?)/")

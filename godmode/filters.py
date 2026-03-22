@@ -22,12 +22,14 @@ def apply_filters(queryset, model, filter_field, filter_operator, filter_value, 
         else:
             queryset = apply_field_filter(queryset, model, filter_field, filter_operator, filter_value)
 
-    # Apply sorting
+    # Apply sorting (validate field name against model to prevent arbitrary field exposure)
     if sort_field and sort_direction:
-        if sort_direction == "desc":
-            queryset = queryset.order_by(f"-{sort_field}")
-        else:
-            queryset = queryset.order_by(sort_field)
+        valid_fields = {f.name for f in model._meta.fields}
+        if sort_field in valid_fields:
+            if sort_direction == "desc":
+                queryset = queryset.order_by(f"-{sort_field}")
+            else:
+                queryset = queryset.order_by(sort_field)
 
     return queryset
 
@@ -81,7 +83,7 @@ def apply_field_filter(queryset, model, filter_field, filter_operator, filter_va
 
         return queryset.filter(**filter_kwargs)
 
-    except:
+    except Exception:
         # If field doesn't exist, ignore the filter
         return queryset
 

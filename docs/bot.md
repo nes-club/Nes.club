@@ -66,8 +66,4 @@ Runs as a separate Docker/Railway service (`bot`). Shares the same PostgreSQL da
 
 ## Sync Context Usage
 
-When Django views need to send a Telegram message synchronously, use the bridge in `notifications/telegram/bot.py`:
-```python
-run_bot_action(lambda bot: bot.send_message(chat_id=..., text=...))
-```
-Do **not** call `asyncio.run()` directly in views — use the wrapper.
+To send Telegram messages from synchronous Django views, use `send_telegram_message()` from `notifications/telegram/common.py` — it creates a short-lived event loop internally and does not conflict with the bot's webhook loop (they run in separate processes).

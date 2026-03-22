@@ -7,5 +7,3 @@
 #   True — feed is only visible to club members, other users will be redirected to landing page
 #   False — everyone can view the feed, it becomes the main page
 PRIVATE_FEED = True
-
-PATREON_AUTH_ENABLED = False

@@ -10,6 +10,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "club.settings")
 django.setup()
 # THE END
 
+from asgiref.sync import sync_to_async
+
 from helpdeskbot import config
 from helpdeskbot.handlers.question import update_discussion_message_id, QuestionHandler
 from helpdeskbot.handlers.answers import on_reply_message
@@ -43,7 +45,7 @@ async def on_telegram_admin_bot_message(update: Update, context: ContextTypes.DE
         and message.forward_from_chat \
         and message.forward_from_chat.id == int(config.TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID) \
         and message.forward_from_message_id:
-        update_discussion_message_id(update)
+        await sync_to_async(update_discussion_message_id)(update)
 
 
 def main() -> None:

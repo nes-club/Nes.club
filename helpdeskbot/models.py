@@ -35,13 +35,15 @@ class Answer(models.Model):
 
     @classmethod
     def create_from_update(cls, question, update):
-        return cls(
+        obj = cls(
             user=User.objects.filter(telegram_id=update.message.from_user.id).first(),
             user_name=update.message.from_user.first_name,
             question=question,
             text=update.message.text,
             telegram_data=update.to_dict()
-        ).save()
+        )
+        obj.save()
+        return obj
 
 
 class HelpDeskUser(models.Model):

@@ -31,17 +31,7 @@ Email digests, transactional emails, Telegram notifications, SES webhook handlin
 
 - `telegram/posts.py` — new post notifications to subscribers and rooms
 - `telegram/common.py` — `send_telegram_message()`, `render_html_message()`, Chat/CLUB_CHANNEL helpers
-- `telegram/bot.py` — `run_bot_action(coro_factory)` for calling async bot from sync Django code
-
-### Sync→Async Bridge Pattern
-```python
-# notifications/telegram/bot.py
-def run_bot_action(coro_factory):
-    async def _run():
-        async with telegram.Bot(token=settings.TELEGRAM_TOKEN) as bot:
-            await coro_factory(bot)
-    asyncio.run(_run())
-```
+- `telegram/common.py` — shared helpers for all Telegram notifications
 
 ## Email Unsubscribe & Bounce Handling
 

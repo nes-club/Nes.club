@@ -3,7 +3,6 @@ from functools import wraps
 from asgiref.sync import sync_to_async
 
 from django.conf import settings
-from django.db import close_old_connections
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -33,7 +32,7 @@ def is_moderator(callback):
 def is_club_member(callback):
     @wraps(callback)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
-        club_users = cached_telegram_users()
+        club_users = await sync_to_async(cached_telegram_users)()
 
         if str(update.effective_user.id) not in set(club_users):
             if update.callback_query:
@@ -50,8 +49,3 @@ def is_club_member(callback):
     return wrapper
 
 
-def ensure_fresh_db_connection(func):
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await func(*args, **kwargs)
-    return wrapper

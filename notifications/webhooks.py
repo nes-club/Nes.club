@@ -8,7 +8,7 @@ from notifications.models import WebhookEvent
 
 def webhook_event(request, event_type):
     secret = request.GET.get("secret")
-    if secret not in settings.WEBHOOK_SECRETS:
+    if not settings.WEBHOOK_SECRETS or secret not in settings.WEBHOOK_SECRETS:
         return HttpResponse("Bad secret")
 
     try:

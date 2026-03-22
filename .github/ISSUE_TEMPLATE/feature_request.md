@@ -5,4 +5,4 @@ about: ⚠️ Фичереквесты отныне перехали в диск
 
 # ⚠️ ВНИМАНИЕ: идеи и фичереквесты переехали в дискусии гитхаба, там же за них можно голосовать
 
-https://github.com/vas3k/vas3k.club/discussions
+https://github.com/nes-club/Nes.club/discussions

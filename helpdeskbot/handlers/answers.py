@@ -1,9 +1,9 @@
 import logging
 
+from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from bot.decorators import ensure_fresh_db_connection
 from helpdeskbot import config
 from helpdeskbot.help_desk_common import get_channel_message_link, send_message
 from helpdeskbot.models import Question, Answer
@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 rooms = {r.chat_id: r for r in get_rooms()}
 
 
-@ensure_fresh_db_connection
 async def on_reply_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message or not update.message.reply_to_message or not update.message.text:
         return None
@@ -36,16 +35,15 @@ async def handle_answer_from_channel(update: Update) -> None:
         log.error(f"forward_from_message_id is null")
         return None
 
-    question = Question.objects \
-        .filter(channel_msg_id=channel_msg_id) \
-        .select_related("user", "room") \
-        .first()
+    question = await sync_to_async(
+        Question.objects.filter(channel_msg_id=channel_msg_id).select_related("user", "room").first
+    )()
 
     if not question:
         log.warning(f"Question with channel_msg_id: {channel_msg_id} is not found")
         return None
 
-    Answer.create_from_update(question, update)
+    await sync_to_async(Answer.create_from_update)(question, update)
 
     await notify_user_about_answer(update, question)
 
@@ -59,16 +57,15 @@ async def handle_answer_from_room_chat(update: Update) -> None:
     room_chat_id = str(update.message.chat.id)
     room = rooms[room_chat_id]
 
-    question = Question.objects \
-        .filter(room=room, room_chat_msg_id=room_chat_msg_id) \
-        .select_related("user", "room") \
-        .first()
+    question = await sync_to_async(
+        Question.objects.filter(room=room, room_chat_msg_id=room_chat_msg_id).select_related("user", "room").first
+    )()
 
     if not question:
         log.warning(f"Question with room_chat_msg_id: {room_chat_msg_id} is not found")
         return None
 
-    Answer.create_from_update(question, update)
+    await sync_to_async(Answer.create_from_update)(question, update)
 
     await notify_user_about_answer(update, question)
 

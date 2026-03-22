@@ -8,6 +8,8 @@ from django.utils.html import strip_tags
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters
 
+from asgiref.sync import sync_to_async
+
 from bot.handlers.common import get_club_user
 from helpdeskbot import config
 from helpdeskbot.help_desk_common import get_channel_message_link, send_message, send_reply
@@ -103,15 +105,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> State:
     if not user:
         return ConversationHandler.END
 
-    help_desk_user_ban = HelpDeskUser.objects.filter(user=user).first()
+    help_desk_user_ban = await sync_to_async(HelpDeskUser.objects.filter(user=user).first)()
     if help_desk_user_ban and help_desk_user_ban.is_banned:
         await send_reply(update, "🙈 Вас забанили от пользования справочной сообщества")
         return ConversationHandler.END
 
     if not user.is_moderator:
-        question_count_24h = Question.objects.filter(user=user) \
-            .filter(created_at__gte=datetime.utcnow() - timedelta(hours=24)) \
-            .count()
+        question_count_24h = await sync_to_async(
+            Question.objects.filter(user=user)
+            .filter(created_at__gte=datetime.utcnow() - timedelta(hours=24))
+            .count
+        )()
 
         if question_count_24h >= config.DAILY_QUESTION_LIMIT:
             await send_reply(update, "🙅‍♂️ Упс, кажется вы превысили свой лимит вопросов в день. Приходите завтра!")
@@ -249,7 +253,7 @@ async def publish_question(update: Update, user_data: Dict[str, str]) -> str:
     )
 
     question.channel_msg_id = channel_message.message_id
-    question.save()
+    await sync_to_async(question.save)()
 
     if room and room.chat_id:
         try:
@@ -267,7 +271,7 @@ async def publish_question(update: Update, user_data: Dict[str, str]) -> str:
 
             question.room = room
             question.room_chat_msg_id = room_message.message_id
-            question.save()
+            await sync_to_async(question.save)()
         except Exception as ex:
             log.warning(f"Failed to send message to room: {data.room}. Pls add bot there.", exc_info=ex)
 
@@ -305,6 +309,7 @@ async def finish_review(update: Update, context: ContextTypes.DEFAULT_TYPE) -> S
             f"😱 Неожиданная команда. Можем начать заново - /start",
             reply_markup=start_markup
         )
+        return ConversationHandler.END
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> State:

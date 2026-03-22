@@ -32,7 +32,7 @@ def email_unsubscribe(request, user_id, secret):
     try:
         # dirty hack to support legacy non-base64 codes
         secret = base64.b64decode(secret.encode("utf-8")).decode()
-    except:
+    except Exception:
         pass
 
     user = get_object_or_404(User, id=user_id, secret_hash=secret)
@@ -53,7 +53,7 @@ def email_digest_switch(request, digest_type, user_id, secret):
     try:
         # dirty hack to support legacy non-base64 codes
         secret = base64.b64decode(secret.encode("utf-8")).decode()
-    except:
+    except Exception:
         pass
 
     user = get_object_or_404(User, id=user_id, secret_hash=secret)
@@ -91,6 +91,7 @@ def email_digest_switch(request, digest_type, user_id, secret):
         })
 
 
+@require_auth
 def render_weekly_digest(request):
     try:
         digest, _ = generate_weekly_digest(no_footer=True)

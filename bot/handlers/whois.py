@@ -5,13 +5,12 @@ from telegram import Update
 from telegram import Chat as TGChat
 from telegram.ext import ContextTypes
 
-from bot.decorators import is_club_member, ensure_fresh_db_connection
+from bot.decorators import is_club_member
 from club import settings
 from users.models.user import User
 
 
 @is_club_member
-@ensure_fresh_db_connection
 async def command_whois(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     is_private_forward = update.message is not None \
         and update.message.forward_date is not None \

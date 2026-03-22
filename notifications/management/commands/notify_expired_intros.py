@@ -22,7 +22,7 @@ class Command(BaseCommand):
     help = "Notify people with old intros to update them"
 
     def add_arguments(self, parser):
-        parser.add_argument("--production", nargs=1, type=bool, required=False, default=False)
+        parser.add_argument("--production", action="store_true", required=False, default=False)
 
     def handle(self, *args, **options):
         now = datetime.utcnow()

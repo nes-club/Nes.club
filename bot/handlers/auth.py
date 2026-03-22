@@ -6,11 +6,9 @@ from telegram.error import Forbidden
 from telegram.ext import ContextTypes
 
 from bot.cache import flush_users_cache, cached_telegram_users
-from bot.decorators import ensure_fresh_db_connection
 from users.models.user import User
 
 
-@ensure_fresh_db_connection
 async def command_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message or not update.message.text or " " not in update.message.text:
         await update.effective_chat.send_message(
@@ -48,8 +46,8 @@ async def command_auth(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if user.moderation_status != User.MODERATION_STATUS_APPROVED:
         await update.effective_chat.send_message(f"Теперь осталось пройти модерацию. Бот заработает сразу после этого")
 
-    # Refresh the cache by deleting and requesting it again
+    # Flush cache so next request repopulates with updated telegram_id
     flush_users_cache()
-    cached_telegram_users()
+    await sync_to_async(cached_telegram_users)()
 
     return None
