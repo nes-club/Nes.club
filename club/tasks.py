@@ -17,24 +17,12 @@ def run_notify_expired_intros():
     call_command("notify_expired_intros", production=True)
 
 
-def run_send_best_comments():
-    call_command("send_best_comments")
-
-
 def run_cleanup_post_views():
     call_command("cleanup_post_views")
 
 
 def run_rebuild_search_index():
     call_command("rebuild_search_index")
-
-
-def run_count_chat_members():
-    call_command("count_chat_members")
-
-
-def run_replay_stuck_reviews():
-    call_command("replay_stuck_reviews")
 
 
 def run_replay_pending_moderation():
