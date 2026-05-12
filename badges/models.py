@@ -1,11 +1,9 @@
-import math
-from datetime import timedelta
 from uuid import uuid4
 
 from django.db import models, transaction, IntegrityError
-from django.db.models import F, Count
+from django.db.models import Count
 
-from club.exceptions import InsufficientFunds, BadRequest, ContentDuplicated
+from club.exceptions import BadRequest, ContentDuplicated
 from comments.models import Comment
 from posts.models.post import Post
 from users.models.user import User
@@ -17,12 +15,11 @@ class Badge(models.Model):
 
     title = models.CharField(max_length=64, null=False)
     description = models.CharField(max_length=256, null=True)
-    price_days = models.IntegerField(default=10)
     is_visible = models.BooleanField(default=True)
 
     class Meta:
         db_table = "badges"
-        ordering = ["price_days", "code"]
+        ordering = ["code"]
 
     def __str__(self):
         return f"Badge: {self.code}"
@@ -69,15 +66,6 @@ class UserBadge(models.Model):
                 message="Это что такое-то вообще!"
             )
 
-        if badge.price_days >= from_user.membership_days_left():
-            raise InsufficientFunds(
-                title="💸 Недостаточно средств :(",
-                message=f"Вы не можете подарить юзеру эту награду, "
-                        f"так как у вас осталось {math.floor(from_user.membership_days_left())} дней членства, "
-                        f"а награда стоит {badge.price_days}. "
-                        f"Продлите членство в настройках своего профиля."
-            )
-
         with transaction.atomic():
             # save user badge into the database
             try:
@@ -93,13 +81,6 @@ class UserBadge(models.Model):
                 raise ContentDuplicated(
                     title="🛑 Вы уже дарили награду за этот пост или комментарий",
                     message="Повторно ту же самую награду дарить нельзя. Но вы можете выбрать другую!"
-                )
-
-            # deduct days balance from profile
-            User.objects\
-                .filter(id=from_user.id)\
-                .update(
-                    membership_expires_at=F("membership_expires_at") - timedelta(days=badge.price_days)
                 )
 
             # add badge to post/comment metadata (for caching purposes)

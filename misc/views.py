@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 from zoneinfo import ZoneInfo
 from django.conf import settings
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET
@@ -35,8 +35,8 @@ def stats(request):
         User.registered_members().filter(id=to_user).first() for to_user, _ in UserBadge.objects
         .filter(created_at__gte=datetime.utcnow() - timedelta(days=150))
         .values_list("to_user")
-        .annotate(sum_price=Sum("badge__price_days"))
-        .order_by("-sum_price")[:20]  # select more in case someone gets deleted
+        .annotate(badge_count=Count("id"))
+        .order_by("-badge_count")[:20]  # select more in case someone gets deleted
     ]))[:15]  # filter None
 
     recent_users = User.objects\
