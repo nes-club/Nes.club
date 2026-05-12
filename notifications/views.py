@@ -12,7 +12,7 @@ from authn.decorators.auth import require_auth
 from club.exceptions import AccessDenied, NotFound
 
 from authn.decorators.api import api
-from notifications.digests import generate_daily_digest, generate_weekly_digest
+from notifications.digests import generate_weekly_digest
 from users.models.user import User
 
 
@@ -60,6 +60,10 @@ def email_digest_switch(request, digest_type, user_id, secret):
 
     if not dict(User.EMAIL_DIGEST_TYPES).get(digest_type):
         raise Http404()
+
+    # daily digest removed, redirect to weekly
+    if digest_type == User.EMAIL_DIGEST_TYPE_DAILY:
+        digest_type = User.EMAIL_DIGEST_TYPE_WEEKLY
 
     user.email_digest_type = digest_type
     user.is_email_unsubscribed = False
