@@ -11,7 +11,9 @@ class Command(BaseCommand):
     help = "Updates hotness rank"
 
     def handle(self, *args, **options):
-        Post.objects.exclude(hotness=0).update(hotness=0)
+        Post.objects.filter(
+            last_activity_at__gt=datetime.utcnow() - POST_HOTNESS_PERIOD
+        ).exclude(hotness=0).update(hotness=0)
 
         with connection.cursor() as cursor:
             cursor.execute("""

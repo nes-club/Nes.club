@@ -24,7 +24,7 @@ SCHEDULES = [
     ("replay_stuck_reviews",          "club.tasks.run_replay_stuck_reviews",        "0 8 * * *"),
     ("replay_pending_moderation",     "club.tasks.run_replay_pending_moderation",   "20 */6 * * *"),
     ("cleanup_gdpr_downloads",        "club.tasks.run_cleanup_gdpr_downloads",      "0 4 * * *"),
-    ("update_hotness",                "club.tasks.run_update_hotness",              "13 * * * *"),
+    ("update_hotness",                "club.tasks.run_update_hotness",              "13 */6 * * *"),
     ("promote_old_post",              "club.tasks.run_promote_old_post",            "0 7 * * 3,6"),
 ]
 
