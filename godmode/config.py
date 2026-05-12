@@ -1,7 +1,6 @@
 from badges.models import UserBadge, Badge
 from bookmarks.models import PostBookmark
 from comments.models import Comment
-from gdpr.models import DataRequests
 from godmode.actions.post_announce import get_announce_action, post_announce_action
 from godmode.actions.post_comments import get_comments_action, post_comments_action
 from godmode.actions.post_feeds import get_feeds_action, post_feeds_action
@@ -504,16 +503,6 @@ ADMIN = ClubAdmin(
             title="Разное",
             icon="😉",
             models=[
-                ClubAdminModel(
-                    model=DataRequests,
-                    title="Запросы данных",
-                    icon="🗃️",
-                    name="data_requests",
-                    list_roles={User.ROLE_GOD},
-                    edit_roles={User.ROLE_GOD},
-                    delete_roles={User.ROLE_GOD},
-                    create_roles={User.ROLE_GOD},
-                ),
                 ClubAdminPage(
                     title="Генератор бейджиков",
                     icon="🪪",

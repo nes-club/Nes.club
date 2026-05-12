@@ -93,7 +93,6 @@ def send_data_archive_ready_email(user: User, url: str):
         recipient=user.email,
         subject=f"💽 Ваш архив с данными готов",
         html=auth_template.render({"user": user, "url": url}),
-        tags=["gdpr"]
     )
 
 

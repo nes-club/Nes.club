@@ -45,10 +45,6 @@ def run_replay_pending_moderation():
     call_command("replay_pending_moderation_posts")
 
 
-def run_cleanup_gdpr_downloads():
-    call_command("cleanup_gdpr_downloads")
-
-
 def run_update_hotness():
     call_command("update_hotness")
 
