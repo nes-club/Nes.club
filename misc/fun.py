@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
@@ -55,6 +56,7 @@ def mass_note(request):
                     user_from=request.me,
                     user_to=user
                 ).delete()
+                cache.delete(f"user:{request.me.id}:notes")
                 updated_users += [user]
             elif only_new:
                 _, is_created = UserNote.objects.get_or_create(
@@ -65,6 +67,7 @@ def mass_note(request):
                     )
                 )
                 if is_created:
+                    cache.delete(f"user:{request.me.id}:notes")
                     updated_users += [user]
             else:
                 UserNote.objects.update_or_create(
@@ -74,6 +77,7 @@ def mass_note(request):
                         text=note
                     )
                 )
+                cache.delete(f"user:{request.me.id}:notes")
                 updated_users += [user]
 
         return render(request, "misc/mass_note.html", {

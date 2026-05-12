@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Value
 from django.db.models.functions import Replace
 
@@ -84,6 +85,12 @@ def delete_user_data(user: User):
     PostBookmark.objects.filter(user=user).delete()
     Friend.objects.filter(user_from=user).delete()
     Friend.objects.filter(user_to=user).delete()
+
+    # invalidate mute caches for users who had muted this user
+    users_who_muted_this_user = UserMuted.objects.filter(user_to=user).values_list("user_from_id", flat=True)
+    for user_from_id in users_who_muted_this_user:
+        cache.delete(f"user:{user_from_id}:muted_ids")
+
     UserMuted.objects.filter(user_from=user).delete()
     UserMuted.objects.filter(user_to=user).delete()
     RoomSubscription.objects.filter(user=user).delete()
