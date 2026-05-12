@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 
@@ -64,6 +65,8 @@ def toggle_mute(request, user_slug):
             user_to=user_to,
             comment=comment,
         )
+        # invalidate muted list cache
+        cache.delete(f"user:{request.me.id}:muted_ids")
 
         return render(request, "users/messages/muted.html", {
             "user": user_to,
@@ -74,6 +77,8 @@ def toggle_mute(request, user_slug):
             user_from=request.me,
             user_to=user_to,
         )
+        # invalidate muted list cache
+        cache.delete(f"user:{request.me.id}:muted_ids")
 
         return render(request, "users/messages/unmuted.html", {
             "user": user_to,

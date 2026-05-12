@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template import TemplateDoesNotExist
@@ -27,8 +28,16 @@ def render_post(request, post, context=None):
         is_voted = PostVote.objects.filter(post=post, user=request.me).exists()
         upvoted_at = int(PostVote.objects.filter(post=post, user=request.me).first().created_at.timestamp() * 1000) if is_voted else None
         subscription = PostSubscription.get(request.me, post)
-        muted_user_ids = list(UserMuted.objects.filter(user_from=request.me).values_list("user_to_id", flat=True).all())
-        user_notes = dict(UserNote.objects.filter(user_from=request.me).values_list("user_to", "text").all()[:100])
+        muted_user_ids = cache.get_or_set(
+            f"user:{request.me.id}:muted_ids",
+            lambda: list(UserMuted.objects.filter(user_from=request.me).values_list("user_to_id", flat=True).all()),
+            timeout=3600,
+        )
+        user_notes = cache.get_or_set(
+            f"user:{request.me.id}:notes",
+            lambda: dict(UserNote.objects.filter(user_from=request.me).values_list("user_to", "text").all()[:100]),
+            timeout=3600,
+        )
         collectible_tag = Tag.objects.filter(code=post.collectible_tag_code).first() if post.collectible_tag_code else None
         is_collectible_tag_collected = UserTag.objects.filter(tag=collectible_tag, user=request.me).exists() if collectible_tag else False
     else:

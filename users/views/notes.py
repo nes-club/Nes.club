@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 
@@ -27,5 +28,8 @@ def edit_note(request, user_slug):
                 text=text.strip()
             )
         )
+
+    # invalidate notes cache
+    cache.delete(f"user:{request.me.id}:notes")
 
     return redirect("profile", user_slug)
