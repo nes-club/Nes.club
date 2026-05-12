@@ -87,25 +87,6 @@ def send_ping_email(user: User, message: str):
     )
 
 
-def send_data_archive_ready_email(user: User, url: str):
-    auth_template = loader.get_template("emails/data_archive_ready.html")
-    send_transactional_email(
-        recipient=user.email,
-        subject=f"💽 Ваш архив с данными готов",
-        html=auth_template.render({"user": user, "url": url}),
-    )
-
-
-def send_delete_account_request_email(user: User, code: Code):
-    auth_template = loader.get_template("emails/delete_account_request.html")
-    send_transactional_email(
-        recipient=user.email,
-        subject=f"🧨 Код для удаления аккаунта",
-        html=auth_template.render({"user": user, "code": code}),
-        tags=["killme"]
-    )
-
-
 def send_delete_account_confirm_email(user: User):
     auth_template = loader.get_template("emails/delete_account_confirm.html")
     send_transactional_email(
