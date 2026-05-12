@@ -96,7 +96,6 @@ def user_to_json(user: User) -> dict:
         "email_digest_type": user.email_digest_type,
         "telegram_id": user.telegram_id,
         "telegram_data": user.telegram_data,
-        "stripe_id": user.stripe_id,
         "is_email_verified": user.is_email_verified,
         "is_email_unsubscribed": user.is_email_unsubscribed,
         "moderation_status": user.moderation_status,
