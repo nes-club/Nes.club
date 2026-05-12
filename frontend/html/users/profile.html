@@ -120,12 +120,10 @@
                         {% elif not user.is_email_verified %}
                             Вы не подтвердили e-mail 🚨
                         {% else %}
-                            {% if user.email_digest_type == "daily" %}
-                                Ежедневный дайджест 🔥
-                            {% elif user.email_digest_type == "weekly" %}
+                            {% if user.email_digest_type == "weekly" %}
                                 Еженедельный журнал 💌
                             {% else %}
-                                Дайджест и журнал отключёны ❌
+                                Дайджест отключён ❌
                             {% endif %}
                         {% endif %}
                     </span>

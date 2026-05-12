@@ -14,7 +14,6 @@ SCHEDULES = [
     # (name, func, cron_expression)
     # Cron format: minute hour day-of-month month day-of-week
     ("delete_users",                  "club.tasks.run_delete_users",               "0 1 * * *"),
-    ("send_daily_digest",             "club.tasks.run_send_daily_digest",           "0 9 * * 1-6"),
     ("notify_expired_intros",         "club.tasks.run_notify_expired_intros",       "0 13 * * 2"),
     ("send_best_comments",            "club.tasks.run_send_best_comments",          "30 */4 * * 1-6"),
     ("send_weekly_digest",            "club.tasks.run_send_weekly_digest",          "0 10 * * 1"),

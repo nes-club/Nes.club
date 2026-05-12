@@ -9,10 +9,6 @@ def run_delete_users():
     call_command("delete_users")
 
 
-def run_send_daily_digest():
-    call_command("send_daily_digest", production=True)
-
-
 def run_send_weekly_digest():
     call_command("send_weekly_digest", production=True)
 
