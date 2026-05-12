@@ -8,7 +8,6 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.template.defaultfilters import date
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from typus import ru_typus
 
 from common.regexp import YOUTUBE_RE
 from common.markdown.markdown import markdown_text
@@ -109,7 +108,7 @@ def rupluralize(value, arg="дурак,дурака,дураков"):
 
 @register.filter
 def rutypography(value):
-    return ru_typus(value)
+    return value
 
 
 @register.filter

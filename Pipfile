@@ -26,14 +26,9 @@ django-redis = "==5.4.0"
 gunicorn = "==23.0.0"
 uvicorn = "*"
 uvloop = ">=0.21.0"
-premailer = "==3.6.1"
-typus = "*"
 icalendar = "*"
 httptools = "*"
-croniter = "*"
 sentry-sdk = "==2.20.0"
-newspaper4k = "==0.9.3.1"
-lxml = {extras = ["html_clean"], version = "==5.3.0"}
 django-webpack-loader = "==3.1.1"
 psycopg = {extras = ["binary", "pool"], version = "*"}
 whitenoise = {extras = ["brotli"], version = "*"}
