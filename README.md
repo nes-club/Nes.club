@@ -164,28 +164,33 @@ REDIS_HOST=${{Redis.REDISHOST}}
 REDIS_PORT=${{Redis.REDISPORT}}
 REDIS_DB=0
 
-# Email (SMTP) — без этого пользователи не смогут войти
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your@email.com
-EMAIL_HOST_PASSWORD=your_app_password
-DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@nes.ru>
+# Email — без этого пользователи не смогут войти (коды логина уходят на почту)
+# ⚠️ Railway блокирует исходящий SMTP (Gmail и т.п. не работают) — нужен HTTP API через django-anymail.
+# Рекомендуется Resend (бесплатный тариф). Альтернатива — Brevo. Подробнее: docs/notifications.md
+EMAIL_BACKEND=anymail.backends.resend.EmailBackend
+RESEND_API_KEY=<ключ из Resend → API Keys>
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@yourdomain.com>
+# ⚠️ Домен в DEFAULT_FROM_EMAIL должен быть подтверждён в Resend → Domains (DNS-записи SPF/DKIM)
 
-# Telegram (опционально — боты не стартуют без токенов, веб-приложение работает)
-TELEGRAM_TOKEN=
+# Telegram — основной бот (опционально: без токенов боты не стартуют, веб-приложение работает).
+# Эти переменные нужны и сервису `club_app` (шлёт уведомления/анонсы), и сервису `bot`.
+TELEGRAM_TOKEN=                      # токен от @BotFather
 TELEGRAM_BOT_URL=https://t.me/your_bot
-TELEGRAM_ADMIN_CHAT_ID=
+TELEGRAM_ADMIN_CHAT_ID=              # чат модераторов (кнопки одобрить/отклонить)
 TELEGRAM_CLUB_CHANNEL_URL=
-TELEGRAM_CLUB_CHANNEL_ID=
+TELEGRAM_CLUB_CHANNEL_ID=            # основной канал (анонсы постов)
 TELEGRAM_CLUB_CHAT_URL=
-TELEGRAM_CLUB_CHAT_ID=
+TELEGRAM_CLUB_CHAT_ID=               # основной чат
 TELEGRAM_ONLINE_CHANNEL_URL=
 TELEGRAM_ONLINE_CHANNEL_ID=
+# Только для сервиса `bot` (webhook-режим в проде — нужен публичный HTTPS):
+TELEGRAM_BOT_WEBHOOK_HOST_URL=https://<bot-service>.up.railway.app
 
-# Helpdesk bot (опционально)
+# Telegram — helpdesk-бот (опционально, отдельный сервис `helpdeskbot`)
 TELEGRAM_HELP_DESK_BOT_TOKEN=
 TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_ID=
 TELEGRAM_HELP_DESK_BOT_QUESTION_CHANNEL_DISCUSSION_ID=
+TELEGRAM_HELPDESK_WEBHOOK_HOST_URL=https://<helpdeskbot-service>.up.railway.app
 
 # Медиа (опционально — без этого аватарки не загружаются, приложение не падает)
 # Подробнее о вариантах: docs/media-storage.md
@@ -292,25 +297,23 @@ Then log in via `/auth/login/` — enter your email, receive a one-time code, do
 
 ### Level 1 — top‑level modules
 
-- `club/` — Django project core: settings, urls, middleware, feature flags.
-- `authn/` — authentication (email login, sessions, OAuth/OpenID apps).
-- `users/` — user profiles, roles, intro/moderation, settings.
-- `posts/` — posts, feeds, RSS, rendering pipeline.
-- `comments/` — comments, editing, moderation tools.
+- `club/` — Django project core: settings, urls, middleware, feature flags, scheduled tasks.
+- `authn/` — authentication: email one‑time‑code login + sessions (no passwords, no OAuth/OpenID).
+- `users/` — user profiles, roles, intro/moderation, settings. Access is perpetual (no paid membership).
+- `posts/` — posts (13 types), feeds, RSS, rendering pipeline.
+- `comments/` — comments (3 levels), voting, rate limiting, moderation tools.
 - `invites/` — invite codes, activation flow.
-- `notifications/` — email/telegram notifications and digests.
-- `godmode/` — admin panel, moderation, bulk actions.
-- `rooms/` — rooms/chats, subscriptions, mutes.
-- `search/` — full‑text search index and UI.
-- `frontend/` — templates, CSS, JS, webpack.
-- `bot/` — main Telegram bot.
-- `helpdeskbot/` — helpdesk Telegram bot.
-- `ai/` — AI assistant integration and tools.
-- `gdpr/` — data export/delete workflows.
-- `common/` — shared utils, data catalogs, markdown renderer.
-- `utils/` — shared helpers and wait scripts.
-- `misc/` — stats/network/robots/assorted endpoints.
-- `badges/`, `bookmarks/`, `tags/`, `clickers/` — supporting features.
+- `notifications/` — email + telegram notifications and the weekly digest.
+- `godmode/` — custom admin panel, moderation actions, bulk operations.
+- `rooms/` — telegram channels/chats directory, subscriptions, mutes.
+- `search/` — full‑text search (PostgreSQL tsvector) — index maintained live + incremental rebuild.
+- `frontend/` — Django templates, CSS, Vue 2 components, webpack.
+- `bot/` — main Telegram bot (auth, moderation buttons, /horo /random /top /whois).
+- `helpdeskbot/` — helpdesk Telegram bot (question → channel → answer routing).
+- `common/` — shared utils, data catalogs, markdown renderers, image upload.
+- `utils/` — shared helpers and wait‑for‑db/migrations scripts.
+- `misc/` — stats, crew, network map, robots, ical/google invites.
+- `badges/` — peer badges (free), `bookmarks/`, `tags/`, `clickers/` (markdown checklists) — supporting features.
 
 ### Level 2 — key files per module
 
@@ -324,9 +327,9 @@ Then log in via `/auth/login/` — enter your email, receive a one-time code, do
 **Auth**
 - `authn/views/auth.py` — `/join`, `/login`, `/logout`.
 - `authn/views/email.py` — email login code flow.
+- `authn/views/debug.py` — dev/random login (only when `DEBUG=true`).
 - `authn/models/session.py` — sessions + one‑time codes.
-- `authn/views/apps.py` — OpenID/OAuth app management.
-- `authn/views/openid.py` — OpenID endpoints.
+- `authn/decorators/auth.py` — `require_auth` decorator.
 - `authn/helpers.py` — auth cookies/session helpers.
 
 **Users**
@@ -334,7 +337,6 @@ Then log in via `/auth/login/` — enter your email, receive a one-time code, do
 - `users/views/profile.py` — profile pages and tabs.
 - `users/views/intro.py` — intro submission + moderation.
 - `users/views/settings.py` — profile/account/notifications/bot/data.
-- `users/views/delete_account.py` — delete account request/confirm.
 - `users/services/access.py` — long‑access handling.
 
 **Posts**
@@ -404,12 +406,10 @@ Then log in via `/auth/login/` — enter your email, receive a one-time code, do
 
 1) `/join/` → `authn/views/auth.py::join`  
    - Validates email + invite (if needed).
-   - Creates user with `moderation_status=intro`.
-   - Grants long access via `users/services/access.py::grant_long_membership`.
+   - Creates user with `moderation_status=intro` (access is perpetual — no paid membership).
    - Sends login code.
 2) `/auth/email/code/` → `authn/views/email.py::email_login_code`  
    - Verifies code, creates session, logs user in.
-   - Re‑grants long access (safety).
 3) `/intro/` → `users/views/intro.py`  
    - User submits intro, status → `on_review`.
 4) `godmode/pages/moderation.py` + actions  
@@ -460,21 +460,6 @@ join -> email_code -> intro -> on_review -> approved
 - `email_login(request)` — Input: `POST email_or_login, goto`; Output: send code + email screen.
 - `email_login_code(request)` — Input: `GET email, code, goto`; Output: session cookie + redirect.
 
-### authn/views/apps.py
-
-- `list_apps(request)` — Input: auth user; Output: list of OAuth/OpenID apps.
-- `create_app(request)` — Input: POST app fields; Output: create + redirect.
-- `edit_app(request, app_id)` — Input: app id + POST; Output: update + redirect.
-- `delete_app(request, app_id)` — Input: app id; Output: delete + redirect.
-
-### authn/views/openid.py
-
-- `openid_authorize(request)` — Input: OpenID params; Output: consent page or redirect with code.
-- `openid_issue_token(request)` — Input: token grant params; Output: JSON token.
-- `openid_revoke_token(request)` — Input: token; Output: JSON result.
-- `openid_well_known_configuration(request)` — Input: none; Output: JSON discovery doc.
-- `openid_well_known_jwks(request)` — Input: none; Output: JWKS JSON.
-
 ### authn/views/debug.py
 
 - `debug_dev_login(request)` — Input: dev only; Output: admin session + redirect.
@@ -500,13 +485,6 @@ join -> email_code -> intro -> on_review -> approved
 - `edit_account(request, user_slug)` — Input: account form; Output: saved account.
 - `edit_notifications(request, user_slug)` — Input: notification form; Output: saved prefs.
 - `edit_bot(request, user_slug)` — Input: bot settings; Output: saved bot links.
-- `edit_data(request, user_slug)` — Input: GDPR form; Output: data request.
-- `request_data(request, user_slug)` — Input: GDPR request; Output: queued export.
-
-### users/views/delete_account.py
-
-- `request_delete_account(request)` — Input: confirmation text; Output: send delete code.
-- `confirm_delete_account(request)` — Input: delete code; Output: mark user for deletion.
 
 ### users/views/friends.py
 
@@ -677,7 +655,7 @@ docker compose exec club_app python3 manage.py createsuperuser
 2. `docker compose up --build` завершился без ошибок
 3. `http://127.0.0.1:8000/` открывается
 4. `/join/` ведет на форму без оплаты
-5. `EMAIL_BACKEND` настроен (console для локального теста или SMTP для реальной почты)
+5. `EMAIL_BACKEND` настроен (console локально; Resend/Brevo через HTTP API в проде — SMTP на Railway заблокирован)
 6. Telegram URL‑ы заданы полными ссылками (`https://t.me/...`) если боты нужны
 7. Боты запущены только если заданы токены
 
@@ -690,7 +668,7 @@ Quick comparison:
    - Hot-reload via `${PWD}:/app`
    - Runs on `:8000`
 2. `docker-compose.production.yml` (prod/server)
-   - Services: app, queue, redis, optional bots/cron
+   - Services: club_app, queue (also runs scheduled tasks), redis, optional bots
    - No webpack; frontend is built in Dockerfile
    - External Postgres
    - Runs on `127.0.0.1:8814` (behind reverse proxy)
@@ -746,30 +724,31 @@ If you see “relation rooms does not exist” on first boot, restart helpdeskbo
 docker compose restart helpdeskbot
 ```
 
-## ✉️ Настройка отправки почты (SMTP)
+## ✉️ Настройка отправки почты
 
-Коды входа и уведомления отправляются через SMTP.
+Коды входа и уведомления отправляются через бэкенд, заданный в `EMAIL_BACKEND`. Код отправки backend‑агностичен (`send_mail` / `EmailMultiAlternatives` в `notifications/email/sender.py`), так что провайдер меняется только переменными окружения. Ключи провайдеров читаются в `club/settings.py → ANYMAIL`.
 
-Минимальные переменные:
-- `EMAIL_BACKEND` (optional, default SMTP; for local debug use `django.core.mail.backends.console.EmailBackend`)
-- `EMAIL_HOST`
-- `EMAIL_PORT` (обычно 587)
-- `EMAIL_HOST_USER`
-- `EMAIL_HOST_PASSWORD`
-- `DEFAULT_FROM_EMAIL`
-
-Пример (Gmail):
-
+**Локально** ничего настраивать не нужно — письма печатаются в консоль:
 ```
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your@nes.ru
-EMAIL_HOST_PASSWORD=app_password_without_spaces
-DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <your@nes.ru>
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 ```
 
-Важно: для Gmail нужен App Password, обычный пароль не подойдет. `DEFAULT_FROM_EMAIL` лучше ставить тем же адресом, что `EMAIL_HOST_USER`.
+**Прод (Railway).** ⚠️ Railway блокирует исходящий SMTP, поэтому Gmail/SMTP не работает — нужен HTTP API через `django-anymail`.
+
+Resend (рекомендуется, бесплатный тариф):
+```
+EMAIL_BACKEND=anymail.backends.resend.EmailBackend
+RESEND_API_KEY=<ключ из Resend → API Keys>
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@yourdomain.com>
+```
+Перед отправкой подтверди домен в **Resend → Domains** (добавь DNS‑записи SPF/DKIM); адрес в `DEFAULT_FROM_EMAIL` должен быть на этом домене.
+
+Brevo — альтернатива (тоже HTTP API):
+```
+EMAIL_BACKEND=anymail.backends.brevo.EmailBackend
+BREVO_API_KEY=<ключ из Brevo → SMTP & API → API Keys>
+DEFAULT_FROM_EMAIL=Сообщество выпускников РЭШ <no-reply@yourdomain.com>
+```
 
 После изменения `.env` перезапустите:
 
@@ -829,7 +808,7 @@ All domains and secrets are read from `.env` (see `.env.production.example`).
    - `CLUB_IMAGE=nesclub/club:latest` (optional; image name in registry)
    - `MEDIA_UPLOAD_URL=` (optional; leave empty for local media)
    - `POSTGRES_HOST`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-   - `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`
+   - `EMAIL_BACKEND`, plus the matching provider key (`RESEND_API_KEY` or `BREVO_API_KEY`), `DEFAULT_FROM_EMAIL` (see “Настройка отправки почты”)
    - `TELEGRAM_TOKEN`, `TELEGRAM_ADMIN_CHAT_ID` (if bots are enabled)
 2. Start production services:
 
@@ -844,7 +823,7 @@ docker compose -f docker-compose.production.yml up -d
 Optional services for prod:
 
 ```sh
-docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
+docker compose -f docker-compose.production.yml up -d bot helpdeskbot queue
 ```
 
 ### ✅ Production checklist
@@ -862,7 +841,6 @@ docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
    - Optional: monitor `GET /metrics` if you expose it
 4. Backups
    - Postgres daily dump (off-host)
-   - `gdpr/downloads` volume backup if you use it
    - Store backups encrypted and test restore monthly
 
 ### ✅ Deployment checklist
@@ -872,7 +850,7 @@ docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
    - A/AAAA записи указывают на сервер
 2. `.env` на сервере
    - Заполнены `POSTGRES_HOST/DB/USER/PASSWORD`
-   - Заполнены SMTP переменные (`EMAIL_*`)
+   - Заполнены email‑переменные (`EMAIL_BACKEND` + `RESEND_API_KEY`/`BREVO_API_KEY` + `DEFAULT_FROM_EMAIL`)
    - `SECRET_KEY` установлен
 3. Docker images
    - Указан `CLUB_IMAGE` или доступна сборка из репозитория
@@ -886,7 +864,7 @@ docker compose -f docker-compose.production.yml up -d bot helpdeskbot cron queue
 7. GitHub Actions
    - `TOKEN` с правами `write:packages`
    - `PRODUCTION_SSH_HOST`, `PRODUCTION_SSH_USERNAME`, `PRODUCTION_SSH_KEY`
-   - Секреты приложения: `SECRET_KEY`, `APP_HOST`, `POSTGRES_PASSWORD`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
+   - Секреты приложения: `SECRET_KEY`, `APP_HOST`, `POSTGRES_PASSWORD`, `RESEND_API_KEY` (или `BREVO_API_KEY`)
    - Опционально: `MEDIA_UPLOAD_URL`, `MEDIA_UPLOAD_CODE`, `SENTRY_DSN`, `TELEGRAM_*`
 
 ### 📦 Nginx пример
@@ -983,9 +961,7 @@ Minimal (required for deploy):
 - `SECRET_KEY`
 - `APP_HOST`
 - `POSTGRES_PASSWORD`
-- `EMAIL_HOST`
-- `EMAIL_HOST_USER`
-- `EMAIL_HOST_PASSWORD`
+- `EMAIL_BACKEND` + `RESEND_API_KEY` (или `BREVO_API_KEY`) + `DEFAULT_FROM_EMAIL`
 
 Media / images (optional):
 - `MEDIA_UPLOAD_URL`

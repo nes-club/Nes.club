@@ -8,8 +8,8 @@ NES.club is a Django 5.1 monolith alumni portal for the New Economic School (Р�
 
 | Component | Description | Docs |
 |-----------|-------------|------|
-| **authn** | Email OTP login, OAuth2/OIDC provider | [docs/authn.md](docs/authn.md) |
-| **users** | Profiles, roles, membership, onboarding | [docs/users.md](docs/users.md) |
+| **authn** | Email one-time-code login + sessions (no passwords, no OAuth) | [docs/authn.md](docs/authn.md) |
+| **users** | Profiles, roles, onboarding (perpetual access — no paid membership) | [docs/users.md](docs/users.md) |
 | **posts** | Feed, 13 post types, RSS, voting | [docs/posts.md](docs/posts.md) |
 | **comments** | Nested discussions, upvotes | [docs/comments.md](docs/comments.md) |
 | **notifications** | Email digests, Telegram alerts | [docs/notifications.md](docs/notifications.md) |
@@ -21,7 +21,8 @@ NES.club is a Django 5.1 monolith alumni portal for the New Economic School (Р�
 | **invites** | Invite-code access | [docs/invites.md](docs/invites.md) |
 | **badges** | User-to-user recognition | [docs/badges.md](docs/badges.md) |
 | **tags** | User categorization/discovery | [docs/tags.md](docs/tags.md) |
-| **gdpr** | Data export and account deletion | [docs/gdpr.md](docs/gdpr.md) |
+| **clickers** | Interactive markdown checklists | — |
+| **misc** | Stats, crew, network map, ical/google invites | — |
 | **common** | Markdown renderers, shared utilities | [docs/common.md](docs/common.md) |
 | **frontend** | Vue.js 2 + Webpack 5 | [docs/frontend.md](docs/frontend.md) |
 | **club** | Django project core (settings, URLs, tasks) | [docs/club.md](docs/club.md) |
@@ -45,7 +46,7 @@ Telegram ──── bot container ──── Django ORM
 
 ### Request Flow
 1. Request hits Django middleware: session extracted → `request.me` = User or None
-2. View checks membership/moderation status, raises `Forbidden`/`NotFound` as needed
+2. View checks moderation/ban status, raises `Forbidden`/`NotFound` as needed
 3. Template rendered with Django context + Vue components mounted client-side
 4. Async side-effects (emails, Telegram notifications) dispatched to django-q2
 
@@ -72,10 +73,10 @@ Task wrappers are in `club/tasks.py`, which call management commands.
 
 All defined in `posts/models/post.py` with `TYPE_TO_EMOJI` and `TYPE_TO_PREFIX` dicts.
 
-### Membership
-- `membership_expires_at` controls session lifetime (non-expired = active member)
-- For alumni portal: membership granted at registration, long-term (bossless)
-- Badge gifting costs membership days from giver
+### Access (no paid membership)
+- The paid-membership model (balance, `membership_*` fields, Stripe) has been removed.
+- Every approved user has **perpetual access** — `is_active_membership` is always true; gating is by `moderation_status` + ban status only.
+- **Badges are free** — gifting a badge no longer costs anything.
 
 ### Moderation Workflow
 ```
@@ -87,7 +88,7 @@ Post created → PENDING → Admin approves → APPROVED (visible)
 ### Telegram Integration
 - Two bots: main (`bot/`) + helpdesk (`helpdeskbot/`)
 - Both use python-telegram-bot v20 (async, Application builder pattern)
-- Sync Django code calls bot via `asyncio.run()` wrapper in `notifications/telegram/bot.py`
+- Sync Django code calls bot via `asyncio.run()` wrapper in `notifications/telegram/common.py`
 - Bot containers run separately, connect to same DB
 
 ---
@@ -129,7 +130,8 @@ django-q2 CRON → run_send_weekly_digest()
 | Frontend | Vue.js 2 + Webpack 5 (hybrid, not SPA) |
 | Markdown | mistune 3 with custom plugins |
 | Telegram | python-telegram-bot 20.7 (async) |
-| Auth | Email OTP + OAuth2/OIDC (authlib) |
+| Auth | Email one-time code (no passwords, no OAuth) |
+| Email delivery | django-anymail → Resend / Brevo (HTTP API; SMTP blocked on Railway) |
 | Full-text search | PostgreSQL FTS with Russian stemming |
 | Containerization | Docker Compose |
 | Error tracking | Sentry |
@@ -141,6 +143,8 @@ django-q2 CRON → run_send_weekly_digest()
 1. **@nes.ru domain gate** — `authn/views/auth.py` validates email domain
 2. **`year_of_graduation` + `faculty`** — added to User model and intro form
 3. **`TYPE_JOB`** — new post type for job postings
-4. **Removed:** Patreon, OpenAI/GPT, crypto payments, GDAL
-5. **Cron → django-q2** — cron container replaced with Schedule-based tasks
-6. **python-telegram-bot 12 → 20** — full async migration
+4. **Removed:** Patreon, OpenAI/GPT, crypto/Stripe payments, paid membership, GDPR app,
+   OAuth/OpenID, daily digest, django-simple-history, badge pricing (badges are free)
+5. **Email over HTTP API** — Resend/Brevo via django-anymail (Railway blocks SMTP)
+6. **Cron → django-q2** — cron container replaced with Schedule-based tasks (run in `queue`)
+7. **python-telegram-bot 12 → 20** — full async migration

@@ -22,22 +22,17 @@ All tasks call `management.call_command()` internally. Set up via:
 python manage.py setup_schedules
 ```
 
-| Task function | Schedule | Command |
+The current schedule (source of truth: `club/management/commands/setup_schedules.py`):
+
+| Task function | Schedule (cron) | Command |
 |--------------|----------|---------|
-| `run_delete_users` | Daily 04:00 | `delete_users` |
-| `run_cleanup_oauth_tokens` | Daily 05:00 | `cleanup_oauth_tokens` |
-| `run_send_daily_digest` | Daily 08:00 | `send_daily_digest` |
-| `run_send_weekly_digest` | Monday 10:00 | `send_weekly_digest` |
-| `run_notify_expired_intros` | Daily 12:00 | `notify_expired_intros` |
-| `run_send_best_comments` | Daily 19:00 | `send_best_comments` |
-| `run_cleanup_post_views` | Daily 01:00 | `cleanup_post_views` |
-| `run_rebuild_search_index` | Daily 03:00 | `rebuild_search_index` |
-| `run_count_chat_members` | Every 6h | `count_chat_members` |
-| `run_replay_stuck_reviews` | Every 30min | `replay_stuck_reviews` |
-| `run_replay_pending_moderation` | Every 30min | `replay_pending_moderation` |
-| `run_cleanup_gdpr_downloads` | Daily 02:00 | `cleanup_gdpr_downloads` |
-| `run_update_hotness` | Every 2h | `update_hotness` |
-| `run_promote_old_post` | Daily 11:00 | `promote_old_post` |
+| `run_notify_expired_intros` | Tue 13:00 | `notify_expired_intros` |
+| `run_send_weekly_digest` | Mon 10:00 | `send_weekly_digest` |
+| `run_cleanup_post_views` | Sat 02:00 | `cleanup_post_views` |
+| `run_rebuild_search_index` | Sun 02:00 | `rebuild_search_index` (incremental) |
+| `run_replay_pending_moderation` | Every 6h at :20 | `replay_pending_moderation_posts` |
+| `run_update_hotness` | Every 6h at :13 | `update_hotness` |
+| `run_promote_old_post` | Wed & Sat 07:00 | `promote_one_old_post_on_main` |
 
 ## Middleware
 

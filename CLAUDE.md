@@ -109,7 +109,8 @@ make build-frontend   # One-time webpack build (uses npm in frontend/)
 | `godmode/` | Admin panel, moderation, bulk actions |
 | `rooms/` | Telegram channel directory and subscriptions |
 | `search/` | Full-text search (PostgreSQL, Russian stemming) |
-| `gdpr/` | Data export/delete workflows |
+| `badges/` | Peer recognition badges (free), `clickers/` markdown checklists |
+| `misc/` | Stats, crew, network map, ical/google invites |
 | `club/` | Django project core: settings, URLs, middleware, feature flags, scheduled tasks |
 | `common/` | Shared utilities, Markdown renderer, data catalogs |
 
@@ -144,7 +145,7 @@ Vue.js components are **not a SPA** — they are compiled by webpack and mounted
 Key variables:
 - `SECRET_KEY` — Django secret key
 - `TELEGRAM_TOKEN` — main bot token
-- `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` — SMTP credentials
+- `EMAIL_BACKEND` + provider key (`RESEND_API_KEY` or `BREVO_API_KEY`) — email delivery via django-anymail (Railway blocks SMTP)
 - `MEDIA_UPLOAD_URL` / `MEDIA_UPLOAD_CODE` — image upload service
 
 ## Production

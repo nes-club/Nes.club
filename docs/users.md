@@ -59,8 +59,8 @@ Both fields are shown in `users/forms/intro.py` and the intro HTML template.
 - `views/settings.py` — edit profile, email prefs, Telegram linking
 - `views/people.py` — alumni directory with tags and map
 
-## Membership
+## Access (no paid membership)
 
-`is_active_member = is_member AND membership_expires_at >= now()`
+The paid-membership model (balance, `membership_*` fields, Stripe) has been removed. Every approved, non-banned user has perpetual access:
 
-For alumni portal: membership is granted for a long term at registration (no payment required). Badge gifting deducts days from `membership_expires_at`.
+`is_member = is_moderation_approved AND not is_banned AND not deleted` — and `is_active_membership` is always true (kept as a compatibility property used by templates). Badge gifting is free and deducts nothing.

@@ -1,35 +1,31 @@
 # authn — Authentication
 
-Email OTP login, session management, and OAuth2/OIDC provider for third-party integrations.
+Email one-time-code login and session management. No passwords, no OAuth/OpenID, no social login.
 
 ## Entry Points
 
-- `GET/POST /auth/` — main join/login flow (`views/auth.py`)
-- `POST /auth/email/` → send OTP code
-- `GET /auth/email/code/` → verify OTP, create session
-- `GET/POST /openid/authorize/` — OAuth2 authorization endpoint
-- `POST /openid/token/` — token exchange
-- `GET /.well-known/openid-configuration` — OIDC discovery
+- `GET/POST /join/` — registration (`views/auth.py::join`)
+- `GET/POST /auth/login/` — login (`views/auth.py::login`)
+- `POST /auth/email/` → send one-time code (`views/email.py::email_login`)
+- `GET /auth/email/code/` → verify code, create session (`views/email.py::email_login_code`)
+- `/godmode/dev_login/`, `/godmode/random_login/` — dev only (`views/debug.py`, disabled when `DEBUG=false`)
 
 ## Models
 
 | Model | Purpose |
 |-------|---------|
-| `Session` | Auth token stored in cookie; expires when membership ends |
+| `Session` | Auth token stored in the `token` cookie (1-year expiry) |
 | `Code` | One-time login code (6-char, max 3 attempts, rate-limited) |
-| `OAuth2App` | Registered third-party apps (client_id, secret, redirect URIs) |
-| `OAuth2Token` | Issued access/refresh tokens |
-| `OAuth2AuthorizationCode` | Short-lived authorization codes |
 
 ## NES Access Gate
 
-`views/auth.py` validates that the email domain is `@nes.ru` **or** that a valid invite code is provided. Both paths are required for entry; see `authn/views/auth.py` for the exact check.
+`views/auth.py` validates that the email domain is `@nes.ru` **or** that a valid invite code is provided. See `authn/views/auth.py` for the exact check.
 
 ## Session Lifetime
 
-`Session.create_for_user()` sets expiry based on `membership_expires_at`. Non-members get a short session. Middleware (`club/middleware.py`) injects `request.me` on every request.
+`Session.create_for_user()` issues a long-lived session (access is perpetual — no paid membership). Middleware (`club/middleware.py`) injects `request.me` on every request via the `token` cookie.
 
 ## External Dependencies
 
-- `authlib` — OAuth2/OIDC implementation
-- `django-q2` — async OTP email dispatch
+- `django-q2` — async one-time-code email dispatch
+- email delivery via `django-anymail` (Resend / Brevo — see `docs/notifications.md`)
