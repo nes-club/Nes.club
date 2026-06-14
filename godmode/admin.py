@@ -10,6 +10,144 @@ from django.template.loader import render_to_string
 from users.models.user import User
 
 
+# Common field name -> Russian label, applied across all forms. Per-model `field_labels` overrides.
+GLOBAL_FIELD_LABELS = {
+    "slug": "Идентификатор (slug)",
+    "title": "Заголовок",
+    "subtitle": "Подзаголовок",
+    "full_name": "Имя",
+    "email": "Email",
+    "avatar": "Аватар (URL)",
+    "company": "Компания",
+    "position": "Должность",
+    "city": "Город",
+    "country": "Страна",
+    "bio": "О себе",
+    "contact": "Контакты",
+    "description": "Описание",
+    "text": "Текст",
+    "url": "Ссылка",
+    "image": "Картинка (URL)",
+    "icon": "Иконка / эмодзи",
+    "color": "Цвет (hex)",
+    "type": "Тип",
+    "author": "Автор",
+    "room": "Комната",
+    "visibility": "Видимость",
+    "label_code": "Лейбл",
+    "collectible_tag_code": "Коллекционный тег",
+    "coauthors": "Соавторы",
+    "comment_template": "Шаблон комментария",
+    "published_at": "Опубликован (дата)",
+    "is_room_only": "Только для комнаты",
+    "is_public": "Публичный",
+    "is_pinned_until": "Закреплён до",
+    "is_visible": "Показывать",
+    "is_pinned": "Закреплён",
+    "is_commentable": "Можно комментировать",
+    "is_open_for_posting": "Открыта для постинга",
+    "moderation_status": "Статус модерации",
+    "is_email_verified": "Email подтверждён",
+    "is_email_unsubscribed": "Отписан от рассылок",
+    "is_banned_until": "Забанен до",
+    "deleted_at": "Удалён (дата)",
+    "profile_publicity_level": "Публичность профиля",
+    "email_digest_type": "Тип дайджеста",
+    "year_of_graduation": "Год выпуска",
+    "faculty": "Факультет",
+    "telegram_id": "Telegram ID",
+    "chat_name": "Название чата",
+    "chat_url": "Ссылка на чат",
+    "chat_id": "ID чата в Telegram",
+    "send_new_posts_to_chat": "Слать новые посты в чат",
+    "send_new_comments_to_chat": "Слать комменты в чат",
+    "network_group": "Группа карты-сети",
+    # auto-managed / internal fields (visible, but labelled so it's clear they're service fields)
+    "upvotes": "Плюсы (счётчик)",
+    "hotness": "Горячесть (счётчик)",
+    "view_count": "Просмотры (счётчик)",
+    "comment_count": "Комментарии (счётчик)",
+    "vote_count": "Голоса (счётчик)",
+    "chat_member_count": "Участников в чате (счётчик)",
+    "last_activity_at": "Последняя активность",
+    "last_view_at": "Последний просмотр",
+    "created_at": "Создано",
+    "updated_at": "Обновлено",
+    "published_at_date": "Дата публикации",
+    "html": "HTML-кеш",
+    "metadata": "Метаданные (JSON)",
+    "telegram_data": "Данные Telegram (JSON)",
+    "geo": "Геолокация",
+    "hat": "Шапка (JSON)",
+    "style": "CSS-стиль",
+    "index": "Порядок сортировки",
+    "secret_hash": "Секретный хеш",
+    # relations / remaining fields across comments, badges, tags, invites, geo, achievements, settings
+    "post": "Пост",
+    "comment": "Комментарий",
+    "reply_to": "Ответ на",
+    "user": "Юзер",
+    "from_user": "От кого",
+    "to_user": "Кому",
+    "user_from": "Юзер (от)",
+    "user_to": "Юзер (кому)",
+    "badge": "Бейдж",
+    "achievement": "Ачивка",
+    "tag": "Тег",
+    "note": "Примечание",
+    "code": "Код",
+    "name": "Название",
+    "value": "Значение",
+    "group": "Группа",
+    "is_deleted": "Удалён",
+    "deleted_by": "Кем удалён",
+    "ipaddress": "IP-адрес",
+    "useragent": "User-Agent",
+    "invited_email": "Email приглашённого",
+    "invited_user": "Приглашённый юзер",
+    "used_at": "Использован (дата)",
+    "is_subscribed_to_posts": "Подписан на посты",
+    "is_subscribed_to_comments": "Подписан на комментарии",
+    "post_from": "Пост (откуда)",
+    "post_to": "Пост (куда)",
+    "custom_message": "Своё сообщение",
+    "custom_template": "Свой шаблон",
+    "latitude": "Широта",
+    "longitude": "Долгота",
+    "population": "Население",
+    "region": "Регион",
+    "city_en": "Город (англ.)",
+    "country_en": "Страна (англ.)",
+    "region_en": "Регион (англ.)",
+}
+
+# Help text for non-obvious fields, applied across all forms. Per-model `field_help` overrides.
+GLOBAL_FIELD_HELP = {
+    "slug": "Короткий идентификатор для URL — латиница и дефисы",
+    "color": "Цвет в hex, например #4CAF50",
+    "icon": "Эмодзи или HTML-иконка рядом с названием",
+    "moderation_status": "intro / on_review / approved / rejected / deleted",
+    "visibility": "draft / link_only / everywhere",
+    "is_banned_until": "Дата окончания бана. Пусто — не забанен",
+    "chat_id": "Числовой ID чата — нужен боту для отправки сообщений (узнать: @getidsbot в чате)",
+    "chat_url": "Инвайт-ссылка на чат (https://t.me/…)",
+    "send_new_posts_to_chat": "Авто-постинг новых постов комнаты в привязанный Telegram-чат",
+    "network_group": "ID группы на карте-сети, если комната к ней относится",
+    # warn that these are auto-managed — usually shouldn't be edited by hand
+    "upvotes": "Служебный счётчик, обновляется автоматически",
+    "hotness": "Служебный рейтинг для сортировки, считается автоматически",
+    "view_count": "Служебный счётчик, обновляется автоматически",
+    "comment_count": "Служебный счётчик, обновляется автоматически",
+    "chat_member_count": "Обновляется ботом автоматически",
+    "html": "Кеш отрендеренного текста, генерится автоматически из поля «Текст»",
+    "metadata": "Служебное JSON-поле, обычно трогать не нужно",
+    "telegram_data": "Сырой ответ от Telegram, служебное",
+    "style": "Служебное CSS-оформление",
+    "index": "Чем меньше число — тем выше в списке",
+    "secret_hash": "Служебный секрет для ссылок, не менять",
+}
+
+
 @dataclass
 class ClubAdminField:
     name: str
@@ -73,6 +211,8 @@ class ClubAdminModel:
     list_fields: list | ClubAdminField = field(default_factory=list)
     edit_fields: list = field(default_factory=list)
     hide_fields: list = field(default_factory=list)
+    field_labels: dict = field(default_factory=dict)
+    field_help: dict = field(default_factory=dict)
 
     list_roles: set[str] = field(default_factory=lambda: {User.ROLE_MODERATOR, User.ROLE_GOD})
     edit_roles: set[str] = field(default_factory=lambda: {User.ROLE_MODERATOR, User.ROLE_GOD})
@@ -116,6 +256,9 @@ class ClubAdminModel:
     def get_form_class(self):
         admin_model = self
 
+        labels = {**GLOBAL_FIELD_LABELS, **admin_model.field_labels}
+        help_texts = {**GLOBAL_FIELD_HELP, **admin_model.field_help}
+
         class DynamicModelForm(forms.ModelForm):
             class Meta:
                 model = admin_model.model
@@ -129,6 +272,12 @@ class ClubAdminModel:
 
                 for field_name, field in self.fields.items():
                     model_field = admin_model.model._meta.get_field(field_name)
+
+                    # Russian label + help text (global, with per-model overrides)
+                    if field_name in labels:
+                        field.label = labels[field_name]
+                    if field_name in help_texts:
+                        field.help_text = help_texts[field_name]
 
                     # Handle foreign key fields - show PK in a text input
                     if isinstance(model_field, models.ForeignKey):
