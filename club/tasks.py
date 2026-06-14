@@ -5,10 +5,6 @@ These are referenced by django-q2 Schedule objects (see setup_schedules manageme
 from django.core.management import call_command
 
 
-def run_delete_users():
-    call_command("delete_users")
-
-
 def run_send_weekly_digest():
     call_command("send_weekly_digest", production=True)
 
@@ -27,10 +23,6 @@ def run_rebuild_search_index():
 
 def run_replay_pending_moderation():
     call_command("replay_pending_moderation_posts")
-
-
-def run_cleanup_gdpr_downloads():
-    call_command("cleanup_gdpr_downloads")
 
 
 def run_update_hotness():

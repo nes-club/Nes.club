@@ -13,13 +13,11 @@ log = logging.getLogger(__name__)
 SCHEDULES = [
     # (name, func, cron_expression)
     # Cron format: minute hour day-of-month month day-of-week
-    ("delete_users",                  "club.tasks.run_delete_users",               "0 1 * * *"),
     ("notify_expired_intros",         "club.tasks.run_notify_expired_intros",       "0 13 * * 2"),
     ("send_weekly_digest",            "club.tasks.run_send_weekly_digest",          "0 10 * * 1"),
     ("cleanup_post_views",            "club.tasks.run_cleanup_post_views",          "0 2 * * 6"),
     ("rebuild_search_index",          "club.tasks.run_rebuild_search_index",        "0 2 * * 7"),
     ("replay_pending_moderation",     "club.tasks.run_replay_pending_moderation",   "20 */6 * * *"),
-    ("cleanup_gdpr_downloads",        "club.tasks.run_cleanup_gdpr_downloads",      "0 4 * * *"),
     ("update_hotness",                "club.tasks.run_update_hotness",              "13 */6 * * *"),
     ("promote_old_post",              "club.tasks.run_promote_old_post",            "0 7 * * 3,6"),
 ]
