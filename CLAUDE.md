@@ -189,10 +189,22 @@ REDIS_HOST=${{Redis.REDISHOST}}
 REDIS_PASSWORD=${{Redis.REDISPASSWORD}}
 ```
 
-**Email (Railway блокирует исходящий SMTP — используй HTTP API):**
+**Email (Railway блокирует исходящий SMTP — используй HTTP API через django-anymail).**
+
+Отправка кода backend-агностична (`send_mail`/`EmailMultiAlternatives` в `notifications/email/sender.py`), поэтому смена провайдера — только переменные окружения. Поддерживаются Resend и Brevo (ключи читаются в `club/settings.py → ANYMAIL`).
+
+Resend (рекомендуется — бесплатный тариф, HTTP API):
+```
+EMAIL_BACKEND=anymail.backends.resend.EmailBackend
+RESEND_API_KEY=<ключ из Resend → API Keys>
+DEFAULT_FROM_EMAIL=Название <no-reply@yourdomain.com>
+```
+Перед отправкой подтверди домен в Resend → Domains (добавь DNS-записи SPF/DKIM), и `DEFAULT_FROM_EMAIL` должен быть на этом домене.
+
+Brevo (альтернатива):
 ```
 EMAIL_BACKEND=anymail.backends.brevo.EmailBackend
-BREVO_API_KEY=<ключ из Brevo → My account → SMTP & API → API Keys>
+BREVO_API_KEY=<ключ из Brevo → SMTP & API → API Keys>
 DEFAULT_FROM_EMAIL=Название <no-reply@yourdomain.com>
 ```
 
