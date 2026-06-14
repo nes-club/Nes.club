@@ -54,5 +54,7 @@ db.sqlite3
 *.session
 venv/
 
-gdpr/downloads/*.zip
 .history
+
+# Superpowers skill artifacts (local planning docs, not part of the project)
+docs/superpowers/
