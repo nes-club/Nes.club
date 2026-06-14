@@ -128,16 +128,21 @@ Railway deploys via the existing `Dockerfile` and `railway.json`. No docker-comp
 
 ### Services to create in Railway
 
-Create separate Railway services from the same GitHub repo, each with a different start command:
+Create separate Railway services from the **same** GitHub repo. They differ only by their **start command**. The most explicit (and Railway-native) way to set it is per service:
+**Service → Settings → Deploy → Custom Start Command.**
 
-| Service | Start command | Notes |
-|---------|--------------|-------|
-| `club_app` | `make docker-run-production` | Main web app, expose HTTP port |
-| `queue` | `make docker-run-queue` | Background task worker, no port |
-| `bot` _(optional)_ | `make docker-run-bot` | Telegram bot via webhook |
-| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` | Helpdesk Telegram bot |
+| Service | Custom Start Command | What it runs |
+|---------|---------------------|--------------|
+| `club_app` | `make docker-run-production` | Applies migrations + `update_achievements`, runs `collectstatic`, optionally creates the first admin (if `INITIAL_ADMIN_*` set), then serves the web app on `$PORT` (Gunicorn + Uvicorn workers). **Expose an HTTP port.** |
+| `queue` | `make docker-run-queue` | Registers scheduled tasks (`setup_schedules`) and runs the django-q2 worker (`qcluster`) — background jobs **and** all cron tasks. No port. |
+| `bot` _(optional)_ | `make docker-run-bot` | Runs the main Telegram bot (`bot/main.py`) in webhook mode. No port. |
+| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` | Runs the helpdesk Telegram bot (`helpdeskbot/main.py`) in webhook mode. No port. |
 
-Also add **Postgres** and **Redis** as Railway plugins (Database → Add).
+All four wait for Postgres + migrations before starting (`utils/wait_for_*`).
+
+> **Note on `SERVICE_CMD`.** If you don't set a Custom Start Command, the repo falls back to `railway.json`'s `startCommand` (`bash start.sh`), which runs `make $SERVICE_CMD` — so you can instead just set a `SERVICE_CMD` **variable** per service (`docker-run-production` / `docker-run-queue` / `docker-run-bot` / `docker-run-helpdeskbot`). `SERVICE_CMD` is **not** a Railway feature — it's a plain env var this repo's `start.sh` reads. A Custom Start Command always overrides it, so prefer the explicit command if in doubt.
+
+Also add **Postgres** and **Redis** as Railway plugins (`+ New → Database`).
 
 ### Required environment variables
 

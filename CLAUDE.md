@@ -166,14 +166,16 @@ docker compose -f docker-compose.production.yml up -d --build
 
 Railway deploys directly from the `Dockerfile` — no docker-compose needed. A `railway.json` is included in the repo root.
 
-**Start command mechanism:** `railway.json` runs `bash start.sh`. The script reads the `SERVICE_CMD` env var and runs `make $SERVICE_CMD`. Set `SERVICE_CMD` per service:
+**Start command mechanism.** All services run from the same repo and differ only by their start command. Set it explicitly per service (Railway-native, no ambiguity): **Service → Settings → Deploy → Custom Start Command.**
 
-| Service | `SERVICE_CMD` |
-|---------|--------------|
-| `club_app` | `docker-run-production` |
-| `queue` | `docker-run-queue` |
-| `bot` _(optional)_ | `docker-run-bot` |
-| `helpdeskbot` _(optional)_ | `docker-run-helpdeskbot` |
+| Service | Custom Start Command | What it runs |
+|---------|----------------------|--------------|
+| `club_app` | `make docker-run-production` | migrate + update_achievements + collectstatic (+ create_admin if `INITIAL_ADMIN_*`), then serves web on `$PORT`. Expose HTTP port. |
+| `queue` | `make docker-run-queue` | `setup_schedules` + django-q2 `qcluster` — background jobs **and** all scheduled/cron tasks. No port. |
+| `bot` _(optional)_ | `make docker-run-bot` | main Telegram bot (`bot/main.py`), webhook mode. No port. |
+| `helpdeskbot` _(optional)_ | `make docker-run-helpdeskbot` | helpdesk Telegram bot (`helpdeskbot/main.py`), webhook mode. No port. |
+
+`SERVICE_CMD` is **not** a Railway feature — it's a plain env var that this repo's `start.sh` reads when no Custom Start Command is set (`railway.json` → `bash start.sh` → `make $SERVICE_CMD`). You can set `SERVICE_CMD=docker-run-queue` etc. as a variable instead, but a Custom Start Command always overrides it — prefer the explicit command if unsure.
 
 **Required env vars for Railway** (set `DEBUG=false` — this disables all dev login endpoints):
 ```
