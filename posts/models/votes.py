@@ -65,6 +65,6 @@ class PostVote(models.Model):
                 post.decrement_vote_count()
                 post.author.decrement_vote_count()
 
-                return True if is_vote_deleted > 0 else False
+                return is_vote_deleted > 0
         except PostVote.DoesNotExist:
             return False

@@ -1,5 +1,4 @@
 import itertools
-from datetime import datetime, timedelta
 
 from django.urls import reverse
 from django.test import TestCase
@@ -27,8 +26,6 @@ class ModelCreator:
         self._exist_users += 1
         return User.objects.create(
             email="testemail_{}@xx.com".format(self._exist_users),
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
             moderation_status=User.MODERATION_STATUS_APPROVED,
             slug="ujlbu4_{}".format(self._exist_users),
         )

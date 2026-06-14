@@ -7,12 +7,32 @@ from django.db.models import Count
 from django.shortcuts import render
 
 from authn.decorators.auth import require_auth
-from common.models import group_by, top
+from common.models import group_by
 from common.pagination import paginate
 from tags.models import Tag
 from users.models.user import User
 
 TAGS_CACHE_TIMEOUT_SECONDS = 24 * 60 * 60  # 24 hours
+
+
+def top_field(queryset, field, skip=None, limit=5):
+    """Top-N most common values of a field, aggregated in the DB (not in Python)."""
+    skip = set(skip or [])
+    rows = queryset\
+        .exclude(**{f"{field}__isnull": True})\
+        .exclude(**{field: ""})\
+        .values(field)\
+        .annotate(count=Count(field))\
+        .order_by("-count")
+
+    result = []
+    for row in rows:
+        value = row[field]
+        if value not in skip:
+            result.append((value, row["count"]))
+        if len(result) >= limit:
+            break
+    return result
 
 
 @require_auth
@@ -84,9 +104,9 @@ def people(request):
     users_total = users.count()
 
     map_stat_groups = {
-        "💼 Топ компаний": top(users, "company", skip={"-"})[:5],
-        "🌍 Страны": top(users, "country")[:5],
-        "🏰 Города": top(users, "city")[:5],
+        "💼 Топ компаний": top_field(users, "company", skip={"-"}),
+        "🌍 Страны": top_field(users, "country"),
+        "🏰 Города": top_field(users, "city"),
     }
 
     return render(request, "users/people.html", {

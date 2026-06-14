@@ -10,7 +10,6 @@ from authn.models.session import Session
 from club.exceptions import AccessDenied
 from invites.models import Invite
 from users.models.user import User
-from users.services.access import grant_long_membership
 
 
 @require_auth
@@ -83,17 +82,12 @@ def activate_invite(request, invite_code):
     user, _ = User.objects.get_or_create(
         email=email,
         defaults=dict(
-            membership_platform_type=User.MEMBERSHIP_PLATFORM_DIRECT,
             full_name=email[:email.find("@")],
-            membership_started_at=now,
-            membership_expires_at=now,
             created_at=now,
             updated_at=now,
             moderation_status=User.MODERATION_STATUS_INTRO,
         ),
     )
-
-    grant_long_membership(user)
 
     # expire the invite
     invite.used_at = now

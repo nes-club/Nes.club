@@ -1,7 +1,7 @@
 import json
 import urllib.request
 import urllib.error
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.db import connections
 from django.conf import settings
@@ -174,11 +174,8 @@ def create_user(author):
         full_name=name,
         company="FAANG",
         position="Team Lead конечно",
-        balance=10000,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
-        membership_started_at=datetime.utcnow(),
-        membership_expires_at=datetime.utcnow() + timedelta(days=365 * 1000),
         is_email_verified=True,
         moderation_status=User.MODERATION_STATUS_APPROVED,
         roles=[],

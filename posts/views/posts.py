@@ -125,7 +125,8 @@ def compose(request):
 
 @require_auth
 def compose_type(request, post_type):
-    if post_type not in dict(Post.TYPES):
+    # weekly_digest is auto-generated — it has no compose template, so reject it explicitly
+    if post_type not in dict(Post.TYPES) or post_type == Post.TYPE_WEEKLY_DIGEST:
         raise Http404()
 
     return create_or_edit(request, post_type, mode="create")
@@ -206,7 +207,12 @@ def create_or_edit(request, post_type, post=None, mode="create"):
             async_task(notify_post_label_changed, post)
 
         if "coauthors" in form.changed_data:
-            async_task(notify_post_coauthors_changed, post)
+            old_coauthors = set(form.initial.get("coauthors") or [])
+            new_coauthors = set(post.coauthors)
+            added_coauthors = list(new_coauthors - old_coauthors)
+            removed_coauthors = list(old_coauthors - new_coauthors)
+            if added_coauthors or removed_coauthors:
+                async_task(notify_post_coauthors_changed, post, added_coauthors, removed_coauthors)
 
         # track intro changes
         if post.type == Post.TYPE_INTRO and not post.is_draft:

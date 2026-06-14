@@ -10,7 +10,6 @@ from invites.models import Invite
 from notifications.email.users import send_auth_email
 from notifications.telegram.users import notify_user_auth
 from users.models.user import User
-from users.services.access import grant_long_membership
 
 from authn.decorators.auth import require_auth
 from authn.models.session import Session
@@ -59,17 +58,12 @@ def join(request):
         user, _ = User.objects.get_or_create(
             email=email,
             defaults=dict(
-                membership_platform_type=User.MEMBERSHIP_PLATFORM_DIRECT,
                 full_name=email.split("@")[0],
-                membership_started_at=now,
-                membership_expires_at=now,
                 created_at=now,
                 updated_at=now,
                 moderation_status=User.MODERATION_STATUS_INTRO,
             ),
         )
-
-        grant_long_membership(user)
 
         if invite:
             invite.used_at = now

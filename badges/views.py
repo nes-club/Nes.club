@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from django_q.tasks import async_task
 
@@ -23,9 +22,6 @@ def create_badge_for_post(request, post_slug):
         )
 
     if request.method != "POST":
-        if request.me.membership_days_left() < settings.MIN_DAYS_TO_GIVE_BADGES:
-            return render(request, "badges/messages/insufficient_funds.html")
-
         if post.type == Post.TYPE_INTRO:
             badges = Badge.badges_for_intro()
         else:
@@ -60,14 +56,8 @@ def create_badge_for_post(request, post_slug):
     # bump post on home page by updating its last_activity_at
     Post.objects.filter(id=post.id).update(last_activity_at=datetime.utcnow())
 
-    # show insufficient funds warning if < 3 months
-    membership_days_remaining = request.me.membership_days_left() - user_badge.badge.price_days
-    show_funds_warning = membership_days_remaining < settings.MIN_DAYS_TO_GIVE_BADGES * 3
-
     return render(request, "badges/messages/success.html", {
         "user_badge": user_badge,
-        "show_funds_warning": show_funds_warning,
-        "membership_days_remaining": membership_days_remaining,
     })
 
 
@@ -90,9 +80,6 @@ def create_badge_for_comment(request, comment_id):
             message="Нельзя выдавать награды самому себе"
         )
     if request.method != "POST":
-        if request.me.membership_days_left() < settings.MIN_DAYS_TO_GIVE_BADGES:
-            return render(request, "badges/messages/insufficient_funds.html")
-
         badges = Badge.badges_for_post_or_comment()
 
         return render(request, "badges/create.html", {
@@ -124,12 +111,6 @@ def create_badge_for_comment(request, comment_id):
     # bump post on home page by updating its last_activity_at
     Post.objects.filter(id=comment.post_id).update(last_activity_at=datetime.utcnow())
 
-    # show insufficient funds warning if < 3 months
-    membership_days_remaining = request.me.membership_days_left() - user_badge.badge.price_days
-    show_funds_warning = membership_days_remaining < settings.MIN_DAYS_TO_GIVE_BADGES * 3
-
     return render(request, "badges/messages/success.html", {
         "user_badge": user_badge,
-        "show_funds_warning": show_funds_warning,
-        "membership_days_remaining": membership_days_remaining,
     })

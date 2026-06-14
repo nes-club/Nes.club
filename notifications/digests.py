@@ -1,121 +1,17 @@
-import base64
-import random
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.template.loader import render_to_string
 
 from badges.models import UserBadge
 from club.exceptions import NotFound
-from comments.models import Comment, CommentVote
-from common.data.greetings import DUMB_GREETINGS
+from comments.models import Comment
 from godmode.models import ClubSettings
 from posts.models.post import Post
-from posts.models.votes import PostVote
 from users.models.achievements import UserAchievement
 from users.models.user import User
-
-
-BONUS_HOURS = 10  # for better/honest rating estimation of "night" posts
-MIN_TOP_POST_UPVOTES = 30
-
-
-def generate_daily_digest(user):
-    end_date = datetime.utcnow()
-
-    if end_date.weekday() == 1:
-        # we don't have daily digest on weekends and mondays, we need to include all these posts at tuesday
-        start_date = end_date - timedelta(hours=3 * 24 + BONUS_HOURS)
-    else:
-        # other days are quieter
-        start_date = end_date - timedelta(hours=2 * 24 + BONUS_HOURS)
-
-    if settings.DEBUG:
-        start_date = end_date - timedelta(days=1000)
-
-    created_at_condition = dict(created_at__gte=start_date, created_at__lte=end_date)
-    published_at_condition = dict(published_at__gte=start_date, published_at__lte=end_date)
-
-    # New comments
-    new_post_comments = Comment.visible_objects()\
-        .filter(
-            post__author=user,
-            **created_at_condition
-        )\
-        .values("post__type", "post__slug", "post__title", "post__author_id")\
-        .annotate(count=Count("post"))\
-        .order_by("-count")\
-        .first()
-
-    new_upvotes = PostVote.objects.filter(post__author=user, **created_at_condition).count() \
-        + CommentVote.objects.filter(comment__author=user, **created_at_condition).count()
-
-    # New posts
-    new_posts = Post.visible_objects()\
-        .filter(**published_at_condition)\
-        .filter(Q(moderation_status=Post.MODERATION_APPROVED) | Q(upvotes__gte=settings.COMMUNITY_APPROVE_UPVOTES))\
-        .exclude(type__in=[Post.TYPE_INTRO, Post.TYPE_WEEKLY_DIGEST])\
-        .order_by("-upvotes")[:3]
-
-    # Hot posts
-    hot_posts = Post.visible_objects()\
-        .filter(Q(moderation_status=Post.MODERATION_APPROVED) | Q(upvotes__gte=settings.COMMUNITY_APPROVE_UPVOTES))\
-        .exclude(type__in=[Post.TYPE_INTRO, Post.TYPE_WEEKLY_DIGEST]) \
-        .exclude(id__in=[p.id for p in new_posts]) \
-        .order_by("-hotness")[:3]
-
-    # Upcoming events
-    upcoming_events = Post.visible_objects()\
-        .filter(Q(moderation_status=Post.MODERATION_APPROVED))\
-        .filter(type=Post.TYPE_EVENT)\
-        .filter(
-            metadata__isnull=False,
-            published_at__gte=datetime.utcnow() - timedelta(days=300),
-            metadata__event__month=str(datetime.utcnow().month),
-            metadata__event__day__in=[str(datetime.utcnow().day + i) for i in range(0, 4)],
-        ).order_by("-upvotes")[:3]
-
-    # New intros
-    intros = Post.visible_objects()\
-        .filter(type=Post.TYPE_INTRO, **published_at_condition)\
-        .order_by("-upvotes")[:3]
-
-    # Top post 1 year ago
-    top_old_post = Post.visible_objects()\
-        .exclude(type__in=[Post.TYPE_INTRO, Post.TYPE_WEEKLY_DIGEST])\
-        .filter(Q(moderation_status=Post.MODERATION_APPROVED) | Q(upvotes__gte=settings.COMMUNITY_APPROVE_UPVOTES))\
-        .filter(
-            published_at__gte=start_date - timedelta(days=365),
-            published_at__lte=end_date - timedelta(days=364)
-         )\
-        .order_by("-upvotes")\
-        .first()
-
-    # Filter out "bad" top posts
-    if top_old_post and top_old_post.upvotes < MIN_TOP_POST_UPVOTES:
-        top_old_post = None
-
-    if not new_post_comments and not new_posts and not intros:
-        raise NotFound()
-
-    return render_to_string("messages/good_morning.html", {
-        "user": user,
-        "intros": intros,
-        "new_posts": new_posts,
-        "hot_posts": hot_posts,
-        "upcoming_events": upcoming_events,
-        "top_old_post": top_old_post,
-        "stats": {
-            "new_post_comments": new_post_comments,
-            "new_upvotes": new_upvotes,
-        },
-        "settings": settings,  # why not automatically?
-        "date": end_date,
-        "greetings": random.choice(DUMB_GREETINGS),
-        "secret_code": base64.b64encode(user.secret_hash.encode("utf-8")).decode()
-    })
 
 
 def generate_weekly_digest(no_footer=False):

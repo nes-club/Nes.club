@@ -6,16 +6,6 @@ from notifications.email.sender import send_transactional_email
 from users.models.user import User
 
 
-def send_registration_email(user: User):
-    registration_template = loader.get_template("emails/registration.html")
-    send_transactional_email(
-        recipient=user.email,
-        subject=f"Ваш доступ в сообщество 🪪",
-        html=registration_template.render({"user": user}),
-        tags=["registration"]
-    )
-
-
 def send_welcome_drink(user: User):
     welcome_drink_template = loader.get_template("emails/welcome.html")
     send_transactional_email(

@@ -14,17 +14,12 @@ from utils.strings import random_string
 
 
 class User(models.Model, ModelDiffMixin):
-    MEMBERSHIP_PLATFORM_DIRECT = "direct"
-    MEMBERSHIP_PLATFORMS = [
-        (MEMBERSHIP_PLATFORM_DIRECT, "Direct"),
-    ]
 
     EMAIL_DIGEST_TYPE_NOPE = "nope"
-    EMAIL_DIGEST_TYPE_DAILY = "daily"
+    EMAIL_DIGEST_TYPE_DAILY = "daily"  # legacy — kept only to redirect old links to weekly
     EMAIL_DIGEST_TYPE_WEEKLY = "weekly"
     EMAIL_DIGEST_TYPES = [
         (EMAIL_DIGEST_TYPE_NOPE, "Nothing"),
-        (EMAIL_DIGEST_TYPE_DAILY, "Daily"),
         (EMAIL_DIGEST_TYPE_WEEKLY, "Weekly"),
     ]
 
@@ -81,20 +76,11 @@ class User(models.Model, ModelDiffMixin):
     contact = models.CharField(max_length=256, null=True)
     hat = models.JSONField(null=True)
 
-    balance = models.IntegerField(default=0)
     upvotes = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_activity_at = models.DateTimeField(auto_now=True)
-
-    membership_started_at = models.DateTimeField(null=False)
-    membership_expires_at = models.DateTimeField(null=False)
-    membership_platform_type = models.CharField(
-        max_length=128, choices=MEMBERSHIP_PLATFORMS,
-        default=MEMBERSHIP_PLATFORM_DIRECT, null=False
-    )
-    membership_platform_data = models.JSONField(null=True)
 
     email_digest_type = models.CharField(
         max_length=16, choices=EMAIL_DIGEST_TYPES,
@@ -153,10 +139,7 @@ class User(models.Model, ModelDiffMixin):
             "bio": self.bio,
             "upvotes": self.upvotes,
             "created_at": self.created_at.isoformat(),
-            "membership_started_at": self.membership_started_at.isoformat(),
-            "membership_expires_at": self.membership_expires_at.isoformat(),
             "moderation_status": self.moderation_status,
-            "payment_status": "active" if self.is_active_membership else "inactive",
             "company": self.company,
             "position": self.position,
             "city": self.city,
@@ -172,9 +155,6 @@ class User(models.Model, ModelDiffMixin):
         if self.last_activity_at < now - timedelta(minutes=5):
             return User.objects.filter(id=self.id).update(last_activity_at=now)
         return None
-
-    def membership_days_left(self):
-        return (self.membership_expires_at - datetime.utcnow()).total_seconds() // 60 // 60 / 24
 
     def membership_created_days(self):
         return (datetime.utcnow() - self.created_at).days

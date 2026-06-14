@@ -42,7 +42,6 @@ def delete_user_data(user: User):
     user.email_digest_type = User.EMAIL_DIGEST_TYPE_NOPE
     user.telegram_id = None
     user.telegram_data = None
-    user.membership_platform_data = None
     user.save()
 
     # delete from chats

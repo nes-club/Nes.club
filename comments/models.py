@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import uuid4
 
 from django.conf import settings
 from django.db import models
 from django.db.models import F
 from django.urls import reverse
-from simple_history.models import HistoricalRecords
 
 from club.exceptions import NotFound, BadRequest
 from common.request import parse_ip_address
@@ -41,23 +40,6 @@ class Comment(models.Model):
 
     deleted_by = models.UUIDField(null=True)
 
-    history = HistoricalRecords(
-        user_model=User,
-        table_name="comments_history",
-        excluded_fields=[
-            "post",
-            "html",
-            "reply_to",
-            "ipaddress",
-            "useragent",
-            "created_at",
-            "updated_at",
-            "upvotes",
-            "is_visible",
-            "is_deleted",
-            "is_pinned",
-        ],
-    )
 
     class Meta:
         db_table = "comments"
@@ -139,14 +121,17 @@ class Comment(models.Model):
 
     @classmethod
     def objects_for_user(cls, user):
-        return cls.visible_objects(show_deleted=True).extra({
-            "is_voted": "select 1 from comment_votes "
-                        "where comment_votes.comment_id = comments.id "
-                        f"and comment_votes.user_id = '{user.id}'",
-            "upvoted_at": "select ROUND(extract(epoch from created_at) * 1000) from comment_votes "
-                          "where comment_votes.comment_id = comments.id "
-                          f"and comment_votes.user_id = '{user.id}'",
-        })
+        return cls.visible_objects(show_deleted=True).extra(
+            select={
+                "is_voted": "select 1 from comment_votes "
+                            "where comment_votes.comment_id = comments.id "
+                            "and comment_votes.user_id = %s",
+                "upvoted_at": "select ROUND(extract(epoch from created_at) * 1000) from comment_votes "
+                              "where comment_votes.comment_id = comments.id "
+                              "and comment_votes.user_id = %s",
+            },
+            select_params=[user.id, user.id],
+        )
 
     @classmethod
     def update_post_counters(cls, post, update_activity=True):
@@ -228,7 +213,7 @@ class CommentVote(models.Model):
                 comment.decrement_vote_count()
                 comment.author.decrement_vote_count()
 
-                return True if is_vote_deleted > 0 else False
+                return is_vote_deleted > 0
             return False
         except CommentVote.DoesNotExist:
             return False

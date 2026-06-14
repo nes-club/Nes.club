@@ -58,24 +58,18 @@ def email_digest_switch(request, digest_type, user_id, secret):
 
     user = get_object_or_404(User, id=user_id, secret_hash=secret)
 
-    if not dict(User.EMAIL_DIGEST_TYPES).get(digest_type):
-        raise Http404()
-
-    # daily digest removed, redirect to weekly
+    # daily digest removed — normalize legacy links to weekly before validation
     if digest_type == User.EMAIL_DIGEST_TYPE_DAILY:
         digest_type = User.EMAIL_DIGEST_TYPE_WEEKLY
+
+    if not dict(User.EMAIL_DIGEST_TYPES).get(digest_type):
+        raise Http404()
 
     user.email_digest_type = digest_type
     user.is_email_unsubscribed = False
     user.save()
 
-    if digest_type == User.EMAIL_DIGEST_TYPE_DAILY:
-        return render(request, "message.html", {
-            "title": "🔥 Теперь вы будете получать дейли-дайджест",
-            "message": "Офигенно. "
-                       "Теперь каждое утро вам будет приходить ваша персональная подборка всего нового в сообществе."
-        })
-    elif digest_type == User.EMAIL_DIGEST_TYPE_WEEKLY:
+    if digest_type == User.EMAIL_DIGEST_TYPE_WEEKLY:
         return render(request, "message.html", {
             "title": "📅 Теперь вы получаете только еженедельный журнал",
             "message": "Раз в неделю вам будет приходить подборка лучшего контента в сообществе за эту неделю, "

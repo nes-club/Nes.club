@@ -1,5 +1,4 @@
 import os
-import warnings
 from datetime import timedelta, datetime
 
 import sentry_sdk
@@ -49,7 +48,6 @@ INSTALLED_APPS = [
     "invites.apps.InvitesConfig",
     "anymail",
     "clickers.apps.ClickersConfig",
-    "simple_history",
     "django_q",
     "webpack_loader",
     "helpdeskbot.apps.HelpDeskBotConfig",
@@ -286,7 +284,6 @@ RATE_LIMIT_COMMENT_PER_DAY_CUSTOM_KEY = "comments_per_day"
 POST_VIEW_COOLDOWN_PERIOD = timedelta(days=1)  # how much time must pass before a repeat viewing of a post counts
 POST_HOTNESS_PERIOD = timedelta(days=5)  # time window for hotness recalculation script
 MAX_COMMENTS_FOR_DELETE_VS_CLEAR = 10  # number of comments after which the post cannot be deleted
-MIN_DAYS_TO_GIVE_BADGES = 50  # minimum "days" balance to buy and gift any badge
 MAX_MUTE_COUNT = 25  # maximum number of users allowed to mute
 CLEARED_POST_TEXT = "```\n" \
     "😥 Этот пост был удален самим автором и от него остались лишь комментарии участников. " \

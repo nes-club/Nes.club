@@ -37,7 +37,6 @@ class Command(BaseCommand):
                 updated_at__lte=scan_date + SCAN_INTERVAL,
                 author__moderation_status=User.MODERATION_STATUS_APPROVED,
                 author__last_activity_at__gte=now - ACTIVITY_THRESHOLD,
-                author__membership_expires_at__gte=now,
             ).select_related("author")
 
             self.stdout.write(f"Scanning {scan_date}. Found {len(expired_intros)} outdated intros...")

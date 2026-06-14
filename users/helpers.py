@@ -51,7 +51,6 @@ def custom_ban_user(user: User, days: int, reason: BanReason) -> bool:
     notify_user_ban(user, days=days, reason=reason_text)
     notify_admins_on_ban(user, days=days, reason=reason_text)
 
-    # cancel subscriptions for long bans
     return True
 
 

@@ -17,11 +17,6 @@ PATH_PREFIXES_WITHOUT_AUTH = [
 ]
 
 
-def authorized_user(request):
-    user, _ = authorized_user_with_session(request)
-    return user
-
-
 def authorized_user_with_session(request) -> Tuple[Optional[User], Optional[Session]]:
     auth_token = request.COOKIES.get("token") or request.GET.get("token")
     if auth_token:

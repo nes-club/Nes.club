@@ -2,7 +2,6 @@ import base64
 import logging
 from datetime import datetime, timedelta
 
-import telegram
 from django.conf import settings
 from django.core.management import BaseCommand
 

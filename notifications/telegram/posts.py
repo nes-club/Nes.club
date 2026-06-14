@@ -144,17 +144,15 @@ def notify_post_approved(post: Post):
         return None
 
     if post.room_id and post.is_room_only:
-        send_telegram_message(
-            chat=Chat(id=post.author.telegram_id),
-            text=render_html_message("post_approved_in_room.html", post=post),
-            parse_mode="HTML",
-        )
+        template = "post_approved_in_room.html"
     else:
-        send_telegram_message(
-            chat=Chat(id=post.author.telegram_id),
-            text=render_html_message("post_approved.html", post=post),
-            parse_mode="HTML",
-        )
+        template = "post_approved.html"
+
+    send_telegram_message(
+        chat=Chat(id=post.author.telegram_id),
+        text=render_html_message(template, post=post),
+        parse_mode="HTML",
+    )
 
     return None
 
@@ -264,16 +262,10 @@ def notify_admins_on_post_label_changed(post):
         )
 
 
-def notify_post_coauthors_changed(post):
-    old = set()
-    history = list(post.history.all()[:2])
-    if len(history) == 2:
-        old = set(history[1].coauthors)
-    new = set(post.coauthors)
-    added = new - old
-    removed = old - new
-    notify_users_by_username(added, "coauthor_added.html", post)
-    notify_users_by_username(removed, "coauthor_removed.html", post)
+def notify_post_coauthors_changed(post, added_coauthors, removed_coauthors):
+    # added/removed coauthors are computed at the call site (form diff)
+    notify_users_by_username(set(added_coauthors), "coauthor_added.html", post)
+    notify_users_by_username(set(removed_coauthors), "coauthor_removed.html", post)
 
 
 def notify_users_by_username(users, template, post):

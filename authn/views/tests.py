@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 
 import django
 from django.test import TestCase
@@ -20,8 +19,6 @@ class ViewsAuthTests(TestCase):
         # Set up data for the whole TestCase
         cls.new_user: User = User.objects.create(
             email="testemail@xx.com",
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
             slug="ujlbu4"
         )
 
@@ -118,8 +115,6 @@ class ViewEmailLoginTests(TestCase):
         # Set up data for the whole TestCase
         cls.new_user: User = User.objects.create(
             email="testemail@xx.com",
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
             slug="ujlbu4"
         )
 
@@ -190,8 +185,6 @@ class ViewEmailLoginCodeTests(TestCase):
         # Set up data for the whole TestCase
         cls.new_user: User = User.objects.create(
             email="testemail@xx.com",
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
             slug="ujlbu4"
         )
         cls.code = Code.create_for_user(user=cls.new_user, recipient=cls.new_user.email)

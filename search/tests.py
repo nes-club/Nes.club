@@ -1,5 +1,4 @@
 import re
-from datetime import datetime, timedelta
 
 import django
 from django.test import TestCase
@@ -53,8 +52,6 @@ class SearchViewsTests(TestCase):
     def create_user(cls, **kwargs):
         user = User.objects.create(
             email=kwargs.pop("email", "testemail{}@xx.com".format(cls.ids_count)),
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
             slug=kwargs.pop("slug", "slug{}".format(cls.ids_count)),
             moderation_status=User.MODERATION_STATUS_APPROVED,
             **kwargs,

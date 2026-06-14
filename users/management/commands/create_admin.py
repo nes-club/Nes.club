@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
 
@@ -32,9 +31,6 @@ class Command(BaseCommand):
             full_name=name,
             moderation_status="approved",
             roles=["god"],
-            membership_started_at=datetime.utcnow(),
-            membership_expires_at=datetime.utcnow() + timedelta(days=365 * 10),
-            balance=10000,
             is_email_verified=True,
         )
         self.stdout.write(f"Admin user created: {email} (slug: {slug})")

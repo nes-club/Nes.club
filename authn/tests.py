@@ -17,8 +17,6 @@ class ModelCodeTests(TestCase):
         # Set up data for the whole TestCase
         cls.new_user: User = User.objects.create(
             email="testemail@xx.com",
-            membership_started_at=datetime.now() - timedelta(days=5),
-            membership_expires_at=datetime.now() + timedelta(days=5),
         )
 
     def test_create_code_positive(self):

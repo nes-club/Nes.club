@@ -1,7 +1,5 @@
 import io
 import logging
-import os
-from urllib.parse import urlparse
 
 import requests
 from PIL import Image
@@ -66,22 +64,3 @@ def upload_image_multipart(
         return response_data["uploaded"][0]
 
     return None
-
-
-def upload_image_from_url(url, resize=(192, 192), convert_to="jpg", quality=90):
-    if settings.DEBUG or not settings.MEDIA_UPLOAD_URL or not settings.MEDIA_UPLOAD_CODE:
-        return url
-
-    if not url:
-        return None
-
-    image_name = os.path.basename(urlparse(url).path)
-    if "." not in image_name:
-        image_name += ".jpg"
-
-    try:
-        image_data = io.BytesIO(requests.get(url).content)
-    except requests.exceptions.RequestException:
-        return None
-
-    return upload_image_multipart(image_name, image_data, resize=resize, convert_to=convert_to, quality=quality)

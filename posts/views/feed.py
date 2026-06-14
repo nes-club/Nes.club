@@ -64,7 +64,7 @@ def feed(
     # for main page — add pinned posts
     pinned_posts = []
     if ordering == ORDERING_ACTIVITY:
-        pinned_posts = posts.filter(is_pinned_until__gte=datetime.utcnow())
+        pinned_posts = list(posts.filter(is_pinned_until__gte=datetime.utcnow()))
         posts = posts.exclude(id__in=[p.id for p in pinned_posts])
 
     # for moderators — pending posts

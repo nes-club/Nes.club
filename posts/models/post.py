@@ -8,7 +8,6 @@ from django.db.models import F, Q
 from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.html import strip_tags
-from simple_history.models import HistoricalRecords
 
 from common.data.labels import LABELS
 from common.models import ModelDiffMixin
@@ -146,29 +145,6 @@ class Post(models.Model, ModelDiffMixin):
     is_room_only = models.BooleanField(default=False)  # post is visible only in the room
     is_public = models.BooleanField(default=False)  # post is visible for the outside world
     is_pinned_until = models.DateTimeField(null=True)  # pin on top on the main page
-
-    history = HistoricalRecords(
-        user_model=User,
-        table_name="posts_history",
-        excluded_fields=[
-            "html",
-            "created_at",
-            "updated_at",
-            "last_activity_at",
-            "published_at",
-            "comment_count",
-            "view_count",
-            "upvotes",
-            "hotness",
-            "label_code",
-            "moderation_status",
-            "visibility",
-            "is_room_only",
-            "is_commentable",
-            "is_pinned_until",
-            "room",
-        ],
-    )
 
     class Meta:
         db_table = "posts"
@@ -353,17 +329,20 @@ class Post(models.Model, ModelDiffMixin):
             .select_related("room", "author")\
             .exclude(visibility=Post.VISIBILITY_DRAFT)\
             .exclude(Q(visibility=Post.VISIBILITY_LINK_ONLY) & ~Q(author=user))\
-            .extra({
-                "is_voted": "select 1 from post_votes "
-                            "where post_votes.post_id = posts.id "
-                            f"and post_votes.user_id = '{user.id}'",
-                "upvoted_at": "select ROUND(extract(epoch from created_at) * 1000) from post_votes "
-                              "where post_votes.post_id = posts.id "
-                              f"and post_votes.user_id = '{user.id}'",
-                "unread_comments": f"select unread_comments from post_views "
-                                   f"where post_views.post_id = posts.id "
-                                   f"and post_views.user_id = '{user.id}'"
-            })  # TODO: i've been trying to use .annotate() here for 2 hours and I have no idea why it's not working
+            .extra(
+                select={
+                    "is_voted": "select 1 from post_votes "
+                                "where post_votes.post_id = posts.id "
+                                "and post_votes.user_id = %s",
+                    "upvoted_at": "select ROUND(extract(epoch from created_at) * 1000) from post_votes "
+                                  "where post_votes.post_id = posts.id "
+                                  "and post_votes.user_id = %s",
+                    "unread_comments": "select unread_comments from post_views "
+                                       "where post_views.post_id = posts.id "
+                                       "and post_views.user_id = %s",
+                },
+                select_params=[user.id, user.id, user.id],
+            )  # TODO: i've been trying to use .annotate() here for 2 hours and I have no idea why it's not working
 
     @classmethod
     def check_rate_limits(cls, user):

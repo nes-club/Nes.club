@@ -55,16 +55,6 @@ async def _send_telegram_image(chat_id, image_url, text, parse_mode, **kwargs):
         )
 
 
-async def _remove_action_buttons(chat_id, message_id, **kwargs):
-    async with telegram.Bot(token=settings.TELEGRAM_TOKEN) as bot:
-        return await bot.edit_message_reply_markup(
-            chat_id=chat_id,
-            message_id=message_id,
-            reply_markup=None,
-            **kwargs
-        )
-
-
 def send_telegram_message(
     chat: Chat,
     text: str,
@@ -105,14 +95,6 @@ def send_telegram_image(
         return asyncio.run(_send_telegram_image(chat.id, image_url, text, parse_mode, **kwargs))
     except telegram.error.TelegramError as ex:
         log.warning(f"Telegram error: {ex}")
-
-
-def remove_action_buttons(chat: Chat, message_id: str, **kwargs):
-    try:
-        return asyncio.run(_remove_action_buttons(chat.id, message_id, **kwargs))
-    except telegram.error.TelegramError:
-        log.info("Buttons are already removed. Skipping")
-        return None
 
 
 def render_html_message(template, **data):
