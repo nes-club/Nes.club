@@ -179,6 +179,11 @@ class ViewEmailLoginTests(TestCase):
                              fetch_redirect_response=False)
 
 
+class UserStripeRemovedTest(TestCase):
+    def test_no_stripe_id_field(self):
+        self.assertFalse(hasattr(User(), "stripe_id"))
+
+
 class ViewEmailLoginCodeTests(TestCase):
     @classmethod
     def setUpTestData(cls):

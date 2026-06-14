@@ -15,12 +15,11 @@ class Badge(models.Model):
 
     title = models.CharField(max_length=64, null=False)
     description = models.CharField(max_length=256, null=True)
-    price_days = models.IntegerField(default=10)
     is_visible = models.BooleanField(default=True)
 
     class Meta:
         db_table = "badges"
-        ordering = ["price_days", "code"]
+        ordering = ["code"]
 
     def __str__(self):
         return f"Badge: {self.code}"

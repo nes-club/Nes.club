@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "notifications.apps.NotificationsConfig",
     "search.apps.SearchConfig",
-    "gdpr.apps.GdprConfig",
     "badges.apps.BadgesConfig",
     "tags.apps.TagsConfig",
     "rooms.apps.RoomsConfig",
@@ -227,13 +226,6 @@ PROFILE_BADGES_PAGE_SIZE = 50
 
 COMMUNITY_APPROVE_UPVOTES = 35
 
-GDPR_ARCHIVE_STORAGE_PATH = os.getenv("GDPR_ARCHIVE_STORAGE_PATH") or os.path.join(BASE_DIR, "gdpr/downloads")
-GDPR_ARCHIVE_URL = "/downloads/"
-GDPR_ARCHIVE_REQUEST_TIMEDELTA = timedelta(hours=6)
-GDPR_ARCHIVE_DELETE_TIMEDELTA = timedelta(hours=24)
-GDPR_DELETE_CODE_LENGTH = 14
-GDPR_DELETE_CONFIRMATION = "я готов удалиться навсегда"
-GDPR_DELETE_TIMEDELTA = timedelta(hours=2 * 24)
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 

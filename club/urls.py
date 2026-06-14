@@ -41,14 +41,13 @@ from bookmarks.views import bookmarks
 from search.views import search
 
 from users.api import api_profile, api_profile_by_telegram_id, api_profile_tags
-from users.views.delete_account import request_delete_account, confirm_delete_account
 from users.views.friends import api_friend, friends
 from users.views.messages import on_review, rejected, banned
 from users.views.muted import toggle_mute, muted
 from users.views.notes import edit_note
 from users.views.profile import profile, toggle_tag, profile_comments, profile_posts, profile_badges
 from users.views.settings import profile_settings, edit_profile, edit_account, edit_notifications, \
-    edit_bot, edit_data, request_data
+    edit_bot
 from users.views.intro import intro
 from users.views.people import people
 from search.api import api_search_users, api_search_tags
@@ -94,9 +93,6 @@ urlpatterns = [
     path("user/<slug:user_slug>/edit/account/", edit_account, name="edit_account"),
     path("user/<slug:user_slug>/edit/bot/", edit_bot, name="edit_bot"),
     path("user/<slug:user_slug>/edit/notifications/", edit_notifications, name="edit_notifications"),
-    path("user/<slug:user_slug>/edit/data/", edit_data, name="edit_data"),
-    path("user/<slug:user_slug>/edit/data/request/", request_data, name="request_user_data"),
-
 
     path("intro/", intro, name="intro"),
     path("people/", people, name="people"),
@@ -108,8 +104,6 @@ urlpatterns = [
     path("profile/on_review/", on_review, name="on_review"),
     path("profile/rejected/", rejected, name="rejected"),
     path("profile/banned/", banned, name="banned"),
-    path("profile/delete/", request_delete_account, name="request_delete_account"),
-    path("profile/delete/confirm/", confirm_delete_account, name="confirm_delete_account"),
 
     path("create/", compose, name="compose"),
     path("create/<slug:post_type>/", compose_type, name="compose_type"),

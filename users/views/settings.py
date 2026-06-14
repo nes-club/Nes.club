@@ -1,11 +1,7 @@
-from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect, get_object_or_404, render
-from django_q.tasks import async_task
 
 from authn.decorators.auth import require_auth
-from gdpr.archive import generate_data_archive
-from gdpr.models import DataRequests
 from search.models import SearchIndex
 from users.forms.profile import ProfileEditForm, NotificationsEditForm
 from users.models.user import User
@@ -94,34 +90,3 @@ def edit_bot(request, user_slug):
         raise Http404()
 
     return render(request, "users/edit/bot.html", {"user": user})
-
-
-@require_auth
-def edit_data(request, user_slug):
-    if user_slug == "me" and request.me:
-        return redirect("edit_data", request.me.slug, permanent=False)
-
-    user = get_object_or_404(User, slug=user_slug)
-    if user.id != request.me.id and not request.me.is_god:
-        raise Http404()
-
-    return render(request, "users/edit/data.html", {"user": user})
-
-
-@require_auth
-def request_data(request, user_slug):
-    if request.method != "POST":
-        return redirect("edit_data", user_slug, permanent=False)
-
-    user = get_object_or_404(User, slug=user_slug)
-    if user.id != request.me.id and not request.me.is_god:
-        raise Http404()
-
-    DataRequests.register_archive_request(user)
-
-    if settings.DEBUG:
-        generate_data_archive(user)
-    else:
-        async_task(generate_data_archive, user=user)
-
-    return render(request, "users/messages/data_requested.html")
